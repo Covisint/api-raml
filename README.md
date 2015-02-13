@@ -19,5 +19,5 @@ Tools involved reading RAML files.  For example, generation of api proxy files a
     </plugin>
     </code></pre>
 #Build and run
-  <code> mvn clean install 
-  mvn com.covisint.raml:generate-raml:1.0-SNAPSHOT:generate-raml </code>
+  <code> mvn clean install </code>
+  <code> mvn com.covisint.raml:generate-raml:1.0-SNAPSHOT:generate-raml </code>
