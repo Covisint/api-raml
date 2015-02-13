@@ -1,7 +1,7 @@
 # api-raml
 Tools involved reading RAML files.  For example, generation of api proxy files and processing Covisint RAML extensions.
 
-#Usage
+#Usage as a plugin
   raml generation tool is a maven plugin. Sample plugin configuration 
     
     <pre><code><plugin>
@@ -18,3 +18,6 @@ Tools involved reading RAML files.  For example, generation of api proxy files a
       </executions>
     </plugin>
     </code></pre>
+  #Build and run
+  <code>mvn clean install 
+  mvn com.covisint.raml:generate-raml:1.0-SNAPSHOT:generate-raml </code>
