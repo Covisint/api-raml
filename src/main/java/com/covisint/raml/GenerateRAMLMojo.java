@@ -56,7 +56,7 @@ public class GenerateRAMLMojo extends AbstractMojo {
 	 * @required
 	 */
 	private File outputDirectory;
-	
+
 	/**
 	 * Location of the file.
 	 * 
@@ -64,13 +64,11 @@ public class GenerateRAMLMojo extends AbstractMojo {
 	 * @required
 	 */
 	private File inputDirectory;
-	
+
 	private int majorVer = 0, minorVer = 0;
 	private int firstNo = 0, secondNo = 0;
 	private int verComp = 0;
-	
-	
-	
+
 	public void execute() throws MojoExecutionException {
 		System.out.println("---Enter direactory---");
 		File f = outputDirectory;
@@ -78,18 +76,13 @@ public class GenerateRAMLMojo extends AbstractMojo {
 		if (!f.exists()) {
 			f.mkdirs();
 		}
-		
-		
-
 
 		String ramlResourceToFetch = inputDirectory.getAbsolutePath();
 
 		File folder = new File(ramlResourceToFetch);
 		File[] listOfFiles = folder.listFiles();
-		
 
-		HashSet<Float> ramlFlolders = ramlVersions(folder,
-				ramlResourceToFetch);
+		HashSet<Float> ramlFlolders = ramlVersions(folder, ramlResourceToFetch);
 
 		Iterator<Float> versionSet = ramlFlolders.iterator();
 		String requestVersion = new String();
@@ -97,13 +90,13 @@ public class GenerateRAMLMojo extends AbstractMojo {
 			requestVersion = String.valueOf(versionSet.next());
 			for (File aFile : listOfFiles) {
 				if (aFile.getName().contains(".raml")) {
-				
-					
-					String path = "file:///" + ramlResourceToFetch +File.separator
-							+ aFile.getName();
 
-					String outPutPath = outputDirectory.getAbsolutePath() + File.separator + requestVersion
+					String path = "file:///" + ramlResourceToFetch
 							+ File.separator + aFile.getName();
+
+					String outPutPath = outputDirectory.getAbsolutePath()
+							+ File.separator + requestVersion + File.separator
+							+ aFile.getName();
 
 					String[] vArr = requestVersion.split("\\.");
 					setMajorVer(Integer.parseInt(vArr[0]));
@@ -113,14 +106,14 @@ public class GenerateRAMLMojo extends AbstractMojo {
 
 					raml = modifyResource(raml);
 
-					raml = modifyAction(raml);
-					raml = modifyHeader(raml);
-					raml = modifyResponse(raml);
-					
 					Raml aRamlSchema = new RamlDocumentBuilder()
-							.build("file:///"+inputDirectory.getAbsolutePath() + File.separator + "common-schema.txt");
+							.build("file:///"
+									+ inputDirectory.getAbsolutePath()
+									+ File.separator + "common-schema.txt");
 					Raml aRamlTraits = new RamlDocumentBuilder()
-							.build("file:///"+inputDirectory.getAbsolutePath()+ File.separator + "common-traits.txt");
+							.build("file:///"
+									+ inputDirectory.getAbsolutePath()
+									+ File.separator + "common-traits.txt");
 					List<Map<String, String>> schemaList = new ArrayList<Map<String, String>>();
 					schemaList.addAll(raml.getSchemas());
 					schemaList.addAll(aRamlSchema.getSchemas());
@@ -166,7 +159,7 @@ public class GenerateRAMLMojo extends AbstractMojo {
 	}
 
 	public HashSet<Float> ramlVersions(File folder, String ramlResourceToFetch) {
-		System.out.println("Input -- "+ramlResourceToFetch);
+		System.out.println("Input -- " + ramlResourceToFetch);
 		File[] listOfFiles = folder.listFiles();
 		HashSet<Float> aSet = new HashSet<Float>();
 		Raml ramlObj = null;
@@ -175,10 +168,10 @@ public class GenerateRAMLMojo extends AbstractMojo {
 
 		for (File aFile : listOfFiles) {
 			if (aFile.getName().contains(".raml")) {
-				String path = "file:///" + ramlResourceToFetch +File.separator
+				String path = "file:///" + ramlResourceToFetch + File.separator
 						+ aFile.getName();
 
-				 System.out.println("--path in ramlVersions--"+path);
+				System.out.println("--path in ramlVersions--" + path);
 				ramlObj = new RamlDocumentBuilder().build(path);
 				Map<String, Resource> resourceMap = ramlObj.getResources();
 				// System.out.println("---resource map--"+resourceMap);
@@ -301,9 +294,6 @@ public class GenerateRAMLMojo extends AbstractMojo {
 
 						}// while itr1
 
-						// actionResponse.setResponses(null);
-						// actionResponse.setResponses(cloneResponse);
-
 					}// while actionItr
 				}// while
 
@@ -315,7 +305,8 @@ public class GenerateRAMLMojo extends AbstractMojo {
 
 			Float value = (Float) itr.next();
 
-			File file = new File(outputDirectory.getAbsolutePath() + File.separator + value);
+			File file = new File(outputDirectory.getAbsolutePath()
+					+ File.separator + value);
 			if (!file.isDirectory()) {
 				file.mkdir();
 
@@ -325,219 +316,134 @@ public class GenerateRAMLMojo extends AbstractMojo {
 		return aSet;
 	}
 
-	/*
-	 * This method check Response description for version
-	 */
-
-	public Raml modifyResponse(Raml ramlObj) {
-		Map<String, Resource> resourceMap = ramlObj.getResources();
-		Resource resource = null;
-
-		Iterator<Entry<String, Resource>> resourceItr = resourceMap.entrySet()
-				.iterator();
-
-		Map.Entry<String, Resource> mapEntry1 = null;
-
-		while (resourceItr.hasNext()) {
-			mapEntry1 = resourceItr.next();
-
-			resource = (Resource) mapEntry1.getValue();
-
-			Map<ActionType, Action> action = resource.getActions();
-
-			Iterator<Entry<ActionType, Action>> actionItr = action.entrySet()
-					.iterator();
-			while (actionItr.hasNext()) {
-				Map<String, Response> cloneResponse = new HashMap<String, Response>();
-				Map.Entry<ActionType, Action> entry = (Entry<ActionType, Action>) actionItr
-						.next();
-				Action actionResponse = entry.getValue();
-				Map<String, Response> responseAction = actionResponse
-						.getResponses();
-
-				Iterator<Entry<String, Response>> itr1 = responseAction
-						.entrySet().iterator();
-				while (itr1.hasNext()) {
-					Map.Entry<String, Response> responseMap = (Entry<String, Response>) itr1
-							.next();
-
-					Response response = responseMap.getValue();
-					if (response.getDescription() != null) {
-						verComp = getVersion(response.getDescription()
-								.toString());
-					}
-					if (verComp != -1) {
-						cloneResponse.put(responseMap.getKey(),
-								responseMap.getValue());
-
-					}
-
-				}
-
-				actionResponse.setResponses(null);
-				actionResponse.setResponses(cloneResponse);
-
-			}
-
-		}
-
-		return ramlObj;
-
-	}
-
-	/*
-	 * This method check header description for version
-	 */
-	public Raml modifyHeader(Raml ramlObj) {
-		Map<String, Resource> resourceMap = ramlObj.getResources();
-		Resource resource = null;
-
-		Iterator<Entry<String, Resource>> resourceItr = resourceMap.entrySet()
-				.iterator();
-
-		Map.Entry<String, Resource> mapEntry1 = null;
-
-		while (resourceItr.hasNext()) {
-			mapEntry1 = resourceItr.next();
-
-			resource = (Resource) mapEntry1.getValue();
-
-			Map<ActionType, Action> action = resource.getActions();
-
-			Iterator<Entry<ActionType, Action>> actionItr = action.entrySet()
-					.iterator();
-			while (actionItr.hasNext()) {
-				Map<String, Header> cloneHeader = new HashMap<String, Header>();
-				Map.Entry<ActionType, Action> entry = (Entry<ActionType, Action>) actionItr
-						.next();
-				Action actionHeader = entry.getValue();
-				Map<String, Header> headerAction = actionHeader.getHeaders();
-
-				Iterator<Entry<String, Header>> itr1 = headerAction.entrySet()
-						.iterator();
-				while (itr1.hasNext()) {
-					Map.Entry<String, Header> headerMap = (Entry<String, Header>) itr1
-							.next();
-
-					Header header = headerMap.getValue();
-					if (header.getDescription() != null) {
-						verComp = getVersion(header.getDescription().toString());
-					}
-					if (verComp != -1) {
-						cloneHeader.put(headerMap.getKey(),
-								headerMap.getValue());
-
-					}
-
-				}
-
-				actionHeader.setHeaders(null);
-				actionHeader.setHeaders(cloneHeader);
-
-			}
-
-		}
-
-		return ramlObj;
-
-	}
-
-	/*
-	 * This method check Action description for version
-	 */
-
-	public Raml modifyAction(Raml ramlObj) {
-
-		Map<String, Resource> resourceMap = ramlObj.getResources();
-		Resource resource = null;
-
-		// while(resourceMap.size()!=0){
-		Iterator<Entry<String, Resource>> resourceItr = resourceMap.entrySet()
-				.iterator();
-
-		Map.Entry<String, Resource> mapEntry1 = null;
-
-		while (resourceItr.hasNext()) {
-			mapEntry1 = resourceItr.next();
-
-			resource = (Resource) mapEntry1.getValue();
-
-			Map<ActionType, Action> action = resource.getActions();
-			Map<ActionType, Action> cloneAction = new HashMap<ActionType, Action>();
-			Iterator<Entry<ActionType, Action>> actionItr = action.entrySet()
-					.iterator();
-			while (actionItr.hasNext()) {
-
-				Map.Entry<ActionType, Action> entry = (Entry<ActionType, Action>) actionItr
-						.next();
-				if (entry.getValue().getDescription() != null) {
-					verComp = getVersion(entry.getValue().getDescription()
-							.toString());
-				}
-				
-				if (verComp != -1) {
-					cloneAction.put(entry.getKey(), entry.getValue());
-					//resource.setActions(null);
-					
-				}
-
-			}
-			resource.setActions(cloneAction);
-
-		}
-
-		return ramlObj;
-
-	}
-
-	
-
 	public Raml modifyResource(Raml ramlObj) {
-		System.out.println("******************** Processing RAML object ********************");
+		System.out
+				.println("******************** Processing RAML object ********************");
 		Map<String, Resource> resourceMap = ramlObj.getResources();
 		Map<String, Resource> versionedResourceMap = processResourceMap(resourceMap);
-		if(versionedResourceMap!=null && !versionedResourceMap.isEmpty()){
+		if (versionedResourceMap != null && !versionedResourceMap.isEmpty()) {
 			ramlObj.setResources(versionedResourceMap);
-		}else{
+		} else {
 			ramlObj.setResources(new LinkedHashMap<String, Resource>());
 		}
 		return ramlObj;
 	}
-	
-	public Map<String, Resource> processResourceMap(Map<String, Resource> resourceMap){
-		System.out.println("******************** Processing Resource Map object ********************");
+
+	public Map<String, Resource> processResourceMap(
+			Map<String, Resource> resourceMap) {
+		System.out
+				.println("******************** Processing Resource Map object ********************");
 		Map<String, Resource> versionedResourceMap = new LinkedHashMap<String, Resource>();
-		if(resourceMap!=null && !resourceMap.isEmpty()){
+		if (resourceMap != null && !resourceMap.isEmpty()) {
 			for (String key : resourceMap.keySet()) {
-				Resource versionedResource = processResource(resourceMap.get(key));
-				if(versionedResource!=null){
+				Resource versionedResource = processResource(resourceMap
+						.get(key));
+				if (versionedResource != null) {
 					versionedResourceMap.put(key, versionedResource);
 				}
 			}
-		}		
+		}
 		return versionedResourceMap;
 	}
-	
-	public Resource processResource(Resource resource)
-	{		
-		System.out.println("******************** Processing Resource object ********************");
+
+	public Resource processResource(Resource resource) {
+		System.out
+				.println("******************** Processing Resource object ********************");
 		Resource versionedResource = new Resource();
 		if (resource.getDescription() != null) {
 			verComp = getVersion(resource.getDescription().toString());
 		}
 		if (verComp != -1) {
-			Map<String, Resource> versionedResourceMap = processResourceMap(resource.getResources());
+			Map<String, Resource> versionedResourceMap = processResourceMap(resource
+					.getResources());
 			versionedResource = resource;
-			if(versionedResourceMap!=null && !versionedResourceMap.isEmpty()){
+			processActions(versionedResource);
+			if (versionedResourceMap != null && !versionedResourceMap.isEmpty()) {
 				versionedResource.setResources(versionedResourceMap);
 			}
 		}
 		return versionedResource;
 	}
 
+	public Resource processActions(Resource resource) {
+
+		Map<ActionType, Action> action = resource.getActions();
+		Map<ActionType, Action> cloneAction = new HashMap<ActionType, Action>();
+		Iterator<Entry<ActionType, Action>> actionItr = action.entrySet()
+				.iterator();
+		while (actionItr.hasNext()) {
+
+			Map.Entry<ActionType, Action> entry = (Entry<ActionType, Action>) actionItr
+					.next();
+			if (entry.getValue().getDescription() != null) {
+				verComp = getVersion(entry.getValue().getDescription()
+						.toString());
+			}
+
+			if (verComp != -1) {
+				cloneAction.put(entry.getKey(), entry.getValue());
+				processHeaders(entry.getValue());
+				processResponse(entry.getValue());
+				// resource.setActions(null);
+
+			}
+
+		}
+		resource.setActions(cloneAction);
+		return resource;
+
+	}
+
 	/*
 	 * This will make version comparison
 	 */
+
+	private void processHeaders(Action action) {
+		// TODO Auto-generated method stub
+		Map<String, Header> headerAction = action.getHeaders();
+		Map<String, Header> cloneHeader = new HashMap<String, Header>();
+		Iterator<Entry<String, Header>> itr1 = headerAction.entrySet()
+				.iterator();
+		while (itr1.hasNext()) {
+			Map.Entry<String, Header> headerMap = (Entry<String, Header>) itr1
+					.next();
+
+			Header header = headerMap.getValue();
+			if (header.getDescription() != null) {
+				verComp = getVersion(header.getDescription().toString());
+			}
+			if (verComp != -1) {
+				cloneHeader.put(headerMap.getKey(), headerMap.getValue());
+
+			}
+			action.setHeaders(cloneHeader);
+
+		}
+	}
+
+	private void processResponse(Action action) {
+		// TODO Auto-generated method stub
+		Map<String, Response> responseMap = action.getResponses();
+		Map<String, Response> cloneResponseMap = new HashMap<String, Response>();
+		Iterator<Entry<String, Response>> itr1 = responseMap.entrySet()
+				.iterator();
+		while (itr1.hasNext()) {
+			Map.Entry<String, Response> versionedResponse = (Entry<String, Response>) itr1
+					.next();
+
+			Response response = versionedResponse.getValue();
+			if (response.getDescription() != null) {
+				verComp = getVersion(response.getDescription().toString());
+			}
+			if (verComp != -1) {
+				cloneResponseMap.put(versionedResponse.getKey(),
+						versionedResponse.getValue());
+
+			}
+			action.setResponses(cloneResponseMap);
+
+		}
+	}
 
 	public int getVersion(String description) {
 		int result = 0;
