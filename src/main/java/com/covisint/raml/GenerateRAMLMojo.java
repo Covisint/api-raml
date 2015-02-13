@@ -101,10 +101,8 @@ public class GenerateRAMLMojo extends AbstractMojo {
 					String path = "file:///" + ramlResourceToFetch +File.separator
 							+ aFile.getName();
 
-					String outPutPath = outputDirectory.getAbsolutePath() + requestVersion
-							+ "/" + aFile.getName();
-
-					
+					String outPutPath = outputDirectory.getAbsolutePath() + File.separator + requestVersion
+							+ File.separator + aFile.getName();
 
 					String[] vArr = requestVersion.split("\\.");
 					setMajorVer(Integer.parseInt(vArr[0]));
@@ -316,7 +314,7 @@ public class GenerateRAMLMojo extends AbstractMojo {
 
 			Float value = (Float) itr.next();
 
-			File file = new File(outputDirectory.getAbsolutePath() + value);
+			File file = new File(outputDirectory.getAbsolutePath() + File.separator + value);
 			if (!file.isDirectory()) {
 				file.mkdir();
 
