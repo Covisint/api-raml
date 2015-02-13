@@ -118,11 +118,10 @@ public class GenerateRAMLMojo extends AbstractMojo {
 					raml = modifyHeader(raml);
 					raml = modifyResponse(raml);
 					
-					System.out.println("Schema --- "+inputDirectory.getAbsolutePath()+"//common-schema.txt");
 					Raml aRamlSchema = new RamlDocumentBuilder()
-							.build("file:///"+inputDirectory.getAbsolutePath()+"\\common-schema.txt");
+							.build("file:///"+inputDirectory.getAbsolutePath() + File.separator + "common-schema.txt");
 					Raml aRamlTraits = new RamlDocumentBuilder()
-							.build("file:///"+inputDirectory.getAbsolutePath()+"\\common-traits.txt");
+							.build("file:///"+inputDirectory.getAbsolutePath()+ File.separator + "common-traits.txt");
 					List<Map<String, String>> schemaList = new ArrayList<Map<String, String>>();
 					schemaList.addAll(raml.getSchemas());
 					schemaList.addAll(aRamlSchema.getSchemas());
