@@ -462,7 +462,7 @@ public class GenerateRAMLMojo extends AbstractMojo {
 			resource = (Resource) mapEntry1.getValue();
 
 			Map<ActionType, Action> action = resource.getActions();
-
+			Map<ActionType, Action> cloneAction = new HashMap<ActionType, Action>();
 			Iterator<Entry<ActionType, Action>> actionItr = action.entrySet()
 					.iterator();
 			while (actionItr.hasNext()) {
@@ -473,14 +473,15 @@ public class GenerateRAMLMojo extends AbstractMojo {
 					verComp = getVersion(entry.getValue().getDescription()
 							.toString());
 				}
-				Map<ActionType, Action> cloneAction = new HashMap<ActionType, Action>();
+				
 				if (verComp != -1) {
 					cloneAction.put(entry.getKey(), entry.getValue());
-					resource.setActions(null);
-					resource.setActions(cloneAction);
+					//resource.setActions(null);
+					
 				}
 
 			}
+			resource.setActions(cloneAction);
 
 		}
 
