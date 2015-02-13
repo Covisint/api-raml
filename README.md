@@ -3,6 +3,7 @@ Tools involved reading RAML files.  For example, generation of api proxy files a
 
 #Usage
   raml generation tool is a maven plugin. Sample plugin configuration 
+    <pre><code>
     <plugin>
       <groupId>com.covisint.raml</groupId>
       <artifactId>generate-raml</artifactId>
@@ -16,3 +17,4 @@ Tools involved reading RAML files.  For example, generation of api proxy files a
         </execution>
       </executions>
     </plugin>
+    </code></pre>
