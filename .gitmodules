@@ -1,0 +1,3 @@
+[submodule "api-doc"]
+	path = api-doc
+	url = git@github.com:Covisint/api-doc.git
