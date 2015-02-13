@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -489,47 +490,49 @@ public class GenerateRAMLMojo extends AbstractMojo {
 
 	}
 
-	/*
-	 * This method check Resource description for version
-	 */
+	
 
 	public Raml modifyResource(Raml ramlObj) {
+		System.out.println("******************** Processing RAML object ********************");
 		Map<String, Resource> resourceMap = ramlObj.getResources();
-
-		Resource resource = null;
-
-		Map<String, Resource> cloneResource = new HashMap<String, Resource>();
-		@SuppressWarnings("unused")
-		int size = resourceMap.size();
-
-		ramlObj.setResources(null);
-		while (resourceMap.size() != 0) {
-			Iterator<Entry<String, Resource>> itr2 = resourceMap.entrySet()
-					.iterator();
-
-			Map.Entry<String, Resource> mapEntry1 = null;
-			while (itr2.hasNext()) {
-				mapEntry1 = itr2.next();
-
-				resource = (Resource) mapEntry1.getValue();
-				if (resource.getDescription() != null) {
-					verComp = getVersion(resource.getDescription().toString());
-				}
-
-				if (verComp != -1) {
-					cloneResource.put(mapEntry1.getKey().toString(), resource);
-				}
-
-			}
-			resourceMap = resource.getResources();
-			resource.setResources(null);
-
+		Map<String, Resource> versionedResourceMap = processResourceMap(resourceMap);
+		if(versionedResourceMap!=null && !versionedResourceMap.isEmpty()){
+			ramlObj.setResources(versionedResourceMap);
+		}else{
+			ramlObj.setResources(new LinkedHashMap<String, Resource>());
 		}
-
-		ramlObj.setResources(cloneResource);
-
 		return ramlObj;
-
+	}
+	
+	public Map<String, Resource> processResourceMap(Map<String, Resource> resourceMap){
+		System.out.println("******************** Processing Resource Map object ********************");
+		Map<String, Resource> versionedResourceMap = new LinkedHashMap<String, Resource>();
+		if(resourceMap!=null && !resourceMap.isEmpty()){
+			for (String key : resourceMap.keySet()) {
+				Resource versionedResource = processResource(resourceMap.get(key));
+				if(versionedResource!=null){
+					versionedResourceMap.put(key, versionedResource);
+				}
+			}
+		}		
+		return versionedResourceMap;
+	}
+	
+	public Resource processResource(Resource resource)
+	{		
+		System.out.println("******************** Processing Resource object ********************");
+		Resource versionedResource = new Resource();
+		if (resource.getDescription() != null) {
+			verComp = getVersion(resource.getDescription().toString());
+		}
+		if (verComp != -1) {
+			Map<String, Resource> versionedResourceMap = processResourceMap(resource.getResources());
+			versionedResource = resource;
+			if(versionedResourceMap!=null && !versionedResourceMap.isEmpty()){
+				versionedResource.setResources(versionedResourceMap);
+			}
+		}
+		return versionedResource;
 	}
 
 	/*
