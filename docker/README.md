@@ -21,14 +21,16 @@ use.
 Now, browse the generated documentation on your local machine.
 
 * On Linux, browse to [http://localhost:9000/raml](http://localhost:9000/raml)
-* On Mac and Windows, first find the IP address of the VM using `boot2docker`
+* On Mac and Windows, first find the IP address of the VM using `boot2docker`:
+```
     $ boot2docker ip
     192.168.59.103
-    $ open [http://192.168.59.103:9000/raml](http://192.168.59.103:9000/raml)
+    $ open http://192.168.59.103:9000/raml
+```
 
-To get a copy of the version-specific RAML files, provide another volume to the
-docker container to be mounted at `/out`.  For instance, to generate the files
-in the directory `/tmp/raml.out`:
+To download a copy of the version-specific RAML files, provide another volume
+to the docker container to be mounted at `/out`.  For instance, to generate
+the files in the directory `/tmp/raml.out`:
 
     $ OUTDIR=/tmp/raml.out
     $ mkdir "$OUTDIR"
