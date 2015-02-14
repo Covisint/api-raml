@@ -1,0 +1,49 @@
+#!/bin/bash
+INDIR="/raml"
+OUTDIR="/out"
+OUTLINK="/api-console/dist/raml"
+INDEXFILE="${OUTDIR}/index.html"
+
+NUMRAMLS=$( ls -1 ${INDIR}/*.raml )
+if [[ -z "$NUMRAMLS" ]]; then
+    echo -e "\nNo RAML files found under $INDIR"
+    echo "Did you forget to map the volume, perhaps?"
+    exit 2
+fi
+
+echo -e "\nGenerating versioned RAML files"
+rm -rf ${OUTLINK}
+[[ -d "$OUTDIR" ]] || mkdir -p "$OUTDIR"
+ln -s "$OUTDIR" "$OUTLINK"
+/api-console/ramlparser.rb "$INDIR" "$OUTDIR"
+
+NUMVERS=$( ls -1 "$OUTDIR" )
+if [[ -z "$NUMVERS" ]]; then
+    echo -e "\nFailed to generate versioned RAML files\n\n"
+    exit 2
+fi
+
+echo -e "\nGenerating $INDEXFILE"
+echo "<html><body>" >"$INDEXFILE"
+
+for VERS in ${OUTDIR}/*; do
+    [[ -d "$VERS" ]] || continue
+    VERS=$( basename "$VERS" )
+    echo "<a href=\"/raml/${VERS}\">Version ${VERS}</a></br>" >>"$INDEXFILE"
+
+    VERSDIR="${OUTDIR}/${VERS}"
+    VERSINDEX="${VERSDIR}/index.html"
+    echo "<html><body>" >"$VERSINDEX"
+    for RAML in ${VERSDIR}/*.raml; do
+        BASENAME=$( basename "$RAML" )
+        LINKNAME=$( basename "$RAML" .raml )
+        echo "<a href=\"/?raml=raml/${VERS}/${BASENAME}\">${LINKNAME}</a><br/>" \
+            >>"$VERSINDEX"
+    done
+    echo "</body></html>" >>"$VERSINDEX"
+done
+
+echo "</body></html>" >>"$INDEXFILE"
+
+echo "Launching api-console"
+exec grunt server
