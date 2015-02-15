@@ -15,7 +15,7 @@ them, run the following from the directory containing the RAML files you want to
 use.
 
     $ cd ../api-doc/raml
-    $ docker run -it -v "$PWD":/raml -p 9000:9000 venkytv/covisint-api-console
+    $ docker run -it --rm -v "$PWD":/raml -p 9000:9000 venkytv/covisint-api-console
 
 _The first time you run the `docker run` command, it will download a bunch of
 container layers.  This might take some time.  These layers get cached locally,
@@ -41,7 +41,7 @@ the files in the directory `/tmp/raml.out`:
 
     $ OUTDIR=/tmp/raml.out
     $ mkdir "$OUTDIR"
-    $ docker run -it -v "$PWD":/raml -v "$OUTDIR":/out -p 9000:9000 venkytv/covisint-api-console
+    $ docker run -it --rm -v "$PWD":/raml -v "$OUTDIR":/out -p 9000:9000 venkytv/covisint-api-console
 
 ## Building the docker image
 
