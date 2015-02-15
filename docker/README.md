@@ -19,12 +19,14 @@ use.
 
 Now, browse the generated documentation on your local machine.
 
-* On Linux, browse to [http://localhost:9000/raml](http://localhost:9000/raml)
-* On Mac and Windows, first find the IP address of the VM using `boot2docker`:
+* On Linux, browse to http://localhost:9000/raml
+* On Mac and Windows, use http://192.168.59.103:9000/raml
+
+_In case you are are unable to access the api-console on Mac or Windows, make
+sure that the VM IP has not changed using the `boot2docker` command._
 ```
     $ boot2docker ip
     192.168.59.103
-    $ open http://192.168.59.103:9000/raml
 ```
 
 To download a copy of the version-specific RAML files, provide another volume
