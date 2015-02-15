@@ -83,7 +83,7 @@ while (version = versions.shift)
     input = open(inputfile, 'r:UTF-8') do |f|
       inlined_raml = ''
       f.readlines.each do |line|
-        if (line =~ /\!include\s+(.*)/)
+        if (line !~ /^\s*#/ and line =~ /\!include\s+(.*)/)
           incfile = $1
           incfile = File.join(inputdir, incfile) unless File.exists?(incfile)
           inc = open(incfile).read
