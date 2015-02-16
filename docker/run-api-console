@@ -32,7 +32,6 @@ if [[ -z "$NUMVERS" ]]; then
 fi
 $GENRAML && exit 0
 
-echo -e "\nLaunching api-console"
 echo -e "Generating $INDEXFILE"
 echo "<html><body>" >"$INDEXFILE"
 
@@ -55,4 +54,5 @@ done
 
 echo "</body></html>" >>"$INDEXFILE"
 
+echo -e "\nRunning: $*"
 exec "$@"
