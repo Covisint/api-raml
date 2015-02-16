@@ -4,6 +4,9 @@ OUTDIR="/out"
 OUTLINK="/api-console/dist/raml"
 INDEXFILE="${OUTDIR}/index.html"
 
+GENRAML=false
+[[ "$1" == 'genraml' ]] && GENRAML=true
+
 NUMRAMLS=$( ls -1 ${INDIR}/*.raml )
 if [[ -z "$NUMRAMLS" ]]; then
     echo -e "\nNo RAML files found under $INDIR"
@@ -12,9 +15,14 @@ if [[ -z "$NUMRAMLS" ]]; then
 fi
 
 echo -e "\nGenerating versioned RAML files"
-rm -rf ${OUTLINK}
-[[ -d "$OUTDIR" ]] || mkdir -p "$OUTDIR"
-ln -s "$OUTDIR" "$OUTLINK"
+if $GENRAML; then
+    OUTDIR="${INDIR}/dist"
+    mkdir -p "$OUTDIR"
+else
+    rm -rf ${OUTLINK}
+    [[ -d "$OUTDIR" ]] || mkdir -p "$OUTDIR"
+    ln -s "$OUTDIR" "$OUTLINK"
+fi
 /api-console/ramlparser.rb "$INDIR" "$OUTDIR"
 
 NUMVERS=$( ls -1 "$OUTDIR" )
@@ -22,8 +30,10 @@ if [[ -z "$NUMVERS" ]]; then
     echo -e "\nFailed to generate versioned RAML files\n\n"
     exit 2
 fi
+$GENRAML && exit 0
 
-echo -e "\nGenerating $INDEXFILE"
+echo -e "\nLaunching api-console"
+echo -e "Generating $INDEXFILE"
 echo "<html><body>" >"$INDEXFILE"
 
 for VERS in ${OUTDIR}/*; do
@@ -45,5 +55,4 @@ done
 
 echo "</body></html>" >>"$INDEXFILE"
 
-echo "Launching api-console"
-exec grunt server
+exec "$@"

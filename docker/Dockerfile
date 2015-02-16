@@ -25,4 +25,6 @@ EXPOSE 9000
 
 COPY ./run-api-console /api-console/
 COPY ./ramlparser.rb /api-console/
-CMD [ "/api-console/run-api-console" ]
+
+ENTRYPOINT [ "/api-console/run-api-console" ]
+CMD [ "grunt", "server" ]
