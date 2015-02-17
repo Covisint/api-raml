@@ -1,6 +1,7 @@
 #!/bin/bash
 INDIR="/raml"
 OUTDIR="/out"
+MANIFEST="/api-console/release-manifest.yml"
 OUTLINK="/api-console/dist/raml"
 INDEXFILE="${OUTDIR}/index.html"
 
@@ -34,7 +35,7 @@ else
     [[ -d "$OUTDIR" ]] || mkdir -p "$OUTDIR"
     ln -s "$OUTDIR" "$OUTLINK"
 fi
-/api-console/ramlparser.rb "$INDIR" "$OUTDIR"
+/api-console/ramlparser.rb "$INDIR" "$OUTDIR" "$MANIFEST"
 
 NUMVERS=$( ls -1 "$OUTDIR" )
 if [[ -z "$NUMVERS" ]]; then
@@ -46,22 +47,43 @@ $GENRAML && exit 0
 echo -e "Generating $INDEXFILE"
 echo "<html><body>" >"$INDEXFILE"
 
-for VERS in ${OUTDIR}/*; do
+echo "<h2>Releases</h2><ul>" >>"$INDEXFILE"
+for REL in ${OUTDIR}/releases/*; do
+    [[ -d "$REL" ]] || continue
+    REL=$( basename "$REL" )
+    echo "<li><a href=\"/raml/releases/${REL}\">${REL}</a></li>" >>"$INDEXFILE"
+
+    RELDIR="${OUTDIR}/releases/${REL}"
+    RELINDEX="${RELDIR}/index.html"
+    echo "<html><body>" >"$RELINDEX"
+    for RAML in ${RELDIR}/*.raml; do
+        BASENAME=$( basename "$RAML" )
+        LINKNAME=$( basename "$RAML" .raml )
+        echo "<a href=\"/?raml=raml/releases/${REL}/${BASENAME}\">${LINKNAME}</a><br/>" \
+            >>"$RELINDEX"
+    done
+    echo "</body></html>" >>"$RELINDEX"
+done
+echo "</ul>" >>"$INDEXFILE"
+
+echo "<h2>Versions</h2><ul>" >>"$INDEXFILE"
+for VERS in ${OUTDIR}/versions/*; do
     [[ -d "$VERS" ]] || continue
     VERS=$( basename "$VERS" )
-    echo "<a href=\"/raml/${VERS}\">Version ${VERS}</a></br>" >>"$INDEXFILE"
+    echo "<li><a href=\"/raml/versions/${VERS}\">Version ${VERS}</a></li>" >>"$INDEXFILE"
 
-    VERSDIR="${OUTDIR}/${VERS}"
+    VERSDIR="${OUTDIR}/versions/${VERS}"
     VERSINDEX="${VERSDIR}/index.html"
     echo "<html><body>" >"$VERSINDEX"
     for RAML in ${VERSDIR}/*.raml; do
         BASENAME=$( basename "$RAML" )
         LINKNAME=$( basename "$RAML" .raml )
-        echo "<a href=\"/?raml=raml/${VERS}/${BASENAME}\">${LINKNAME}</a><br/>" \
+        echo "<a href=\"/?raml=raml/versions/${VERS}/${BASENAME}\">${LINKNAME}</a><br/>" \
             >>"$VERSINDEX"
     done
     echo "</body></html>" >>"$VERSINDEX"
 done
+echo "</ul>" >>"$INDEXFILE"
 
 echo "</body></html>" >>"$INDEXFILE"
 

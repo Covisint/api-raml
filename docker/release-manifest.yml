@@ -1,0 +1,19 @@
+201503:
+  - AuthenticationV2: 2.0
+  - IdmV2: 2.0
+  - GroupV1: 1.0
+  - OauthAdminV1: 1.0
+  - OauthTokenV1: 1.0
+  - OrganizationV1: 1.0
+  - PersonV1: 1.0
+  - ServiceV1: 1.0
+
+ALL:
+  - AuthenticationV2: 100.0
+  - IdmV2: 100.0
+  - GroupV1: 100.0
+  - OauthAdminV1: 100.0
+  - OauthTokenV1: 100.0
+  - OrganizationV1: 100.0
+  - PersonV1: 100.0
+  - ServiceV1: 100.0

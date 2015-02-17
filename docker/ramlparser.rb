@@ -1,6 +1,7 @@
 #!/usr/bin/env ruby
 
 require 'fileutils'
+require 'yaml'
 require File.join(File.dirname($0), 'raml')
 
 $DEBUG = false
@@ -12,18 +13,20 @@ def log(msg)
 end
 
 inputdir = ARGV.shift
-outputdir = ARGV.shift
-if (not inputdir or not outputdir or not File.directory?(inputdir))
-  abort "usage: #{$0} <raml-dir> <output-dir>"
+outputbase = ARGV.shift
+manifest = ARGV.shift
+if (not inputdir or not outputbase or not File.directory?(inputdir))
+  abort "usage: #{$0} <raml-dir> <output-dir> [<release-manifest>]"
 end
 
-# Make sure output directory is empty
+# Make sure output directories are empty
+outputdir = File.join(outputbase, 'versions')
 if (Dir.exists?(outputdir))
   abort "Output directory not empty: #{outputdir.sub(/^\/raml\//, '')}" \
     unless Dir["#{outputdir}/*"].empty?
 else
   log "Creating directory: #{outputdir}"
-  Dir.mkdir(outputdir) or abort "Failed to create directory: #{outputdir}"
+  FileUtils.mkdir_p(outputdir) or abort "Failed to create directory: #{outputdir}"
 end
 
 versions = [ '' ]
@@ -54,5 +57,24 @@ while (version = versions.shift)
     # First run -- populate versions list with seen versions
     versions = seen_versions.keys.sort
     puts "Generating RAMLs for versions: #{versions}"
+  end
+end
+
+if (manifest)
+  abort "Manifest file not found: #{manifest}" unless File.exists?(manifest)
+  puts "\nCopying RAMLs into release directories"
+  releases = YAML.load(File.open(manifest))
+  releases.keys.each do |rel|
+    reldir = File.join(outputbase, 'releases', rel.to_s)
+    FileUtils.mkdir_p(reldir)
+
+    releases[rel].each do |r|
+      api = r.keys.first
+      vers = r[api]
+      infile = File.join(outputbase, 'versions', vers.to_s, api + '.raml')
+      outfile = File.join(reldir, api + '.raml')
+      puts "Creating #{outfile} (version #{vers})"
+      FileUtils.cp(infile, outfile)
+    end
   end
 end
