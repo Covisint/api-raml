@@ -19,7 +19,7 @@ end
 
 # Make sure output directory is empty
 if (Dir.exists?(outputdir))
-  abort "Output directory not empty: #{outputdir}" \
+  abort "Output directory not empty: #{outputdir.sub(/^\/raml\//, '')}" \
     unless Dir["#{outputdir}/*"].empty?
 else
   log "Creating directory: #{outputdir}"

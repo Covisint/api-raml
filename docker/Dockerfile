@@ -24,7 +24,9 @@ RUN bower install --allow-root
 EXPOSE 9000
 
 COPY ./run-api-console /api-console/
+COPY ./raml.rb /api-console/
 COPY ./ramlparser.rb /api-console/
+COPY ./gencsv.rb /api-console/
 
 ENTRYPOINT [ "/api-console/run-api-console" ]
 CMD [ "grunt", "server" ]

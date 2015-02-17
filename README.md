@@ -35,11 +35,20 @@ sure that the VM IP has not changed using the `boot2docker` command._
 ### Generating version-specific RAML files
 
 To just generate version-specific RAML files without launching api-console, pass
-the "genraml" argument to the docker command line.  This will create a "dist/"
-directory within your current directory and store the RAML files within
-versioned directories there.
+the "genraml" argument to the docker command line.  This will create a
+"dist/raml" directory within your current directory and store the RAML files
+within versioned directories there.
 
     $ docker run --rm -v "$PWD":/raml venkytv/covisint-api-console genraml
+
+### Generating CSV descriptions of RAML files
+
+To just generate CSV descriptions of RAML files without launching api-console,
+pass the "gencsv" argument to the docker command line.  This will create a
+"dist/csv" directory within your current directory and store the CSV files
+within.
+
+    $ docker run --rm -v "$PWD":/raml venkytv/covisint-api-console gencsv
 
 ### Debugging
 

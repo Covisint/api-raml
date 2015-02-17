@@ -7,6 +7,9 @@ INDEXFILE="${OUTDIR}/index.html"
 GENRAML=false
 [[ "$1" == 'genraml' ]] && GENRAML=true
 
+GENCSV=false
+[[ "$1" == 'gencsv' ]] && GENCSV=true
+
 NUMRAMLS=$( ls -1 ${INDIR}/*.raml )
 if [[ -z "$NUMRAMLS" ]]; then
     echo -e "\nNo RAML files found under $INDIR"
@@ -14,9 +17,17 @@ if [[ -z "$NUMRAMLS" ]]; then
     exit 2
 fi
 
+if $GENCSV; then
+    OUTDIR="${INDIR}/dist/csv"
+    mkdir -p "$OUTDIR"
+    echo "Generating CSV files under dist/csv"
+    /api-console/gencsv.rb "$INDIR" "$OUTDIR"
+    exit
+fi
+
 echo -e "\nGenerating versioned RAML files"
 if $GENRAML; then
-    OUTDIR="${INDIR}/dist"
+    OUTDIR="${INDIR}/dist/raml"
     mkdir -p "$OUTDIR"
 else
     rm -rf ${OUTLINK}
