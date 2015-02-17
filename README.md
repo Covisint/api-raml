@@ -42,8 +42,10 @@ directory and copy the RAML files into release-specific subdirectories.
 
     $ docker run --rm -v "$PWD":/raml venkytv/covisint-api-console genraml
 
-Release information is picked up from the
-[docker/release-manifest.yml](docker/release-manifest.yml) file.
+*IMPORTANT*: Release information is picked up from the
+[docker/release-manifest.yml](docker/release-manifest.yml) file.  If this
+information is changed, the docker image needs to be rebuilt and pushed into
+Docker Hub.  See below for instructions on building the Docker image.
 
 ### Generating CSV descriptions of RAML files
 
