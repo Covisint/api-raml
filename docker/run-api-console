@@ -47,43 +47,46 @@ $GENRAML && exit 0
 echo -e "Generating $INDEXFILE"
 echo "<html><body>" >"$INDEXFILE"
 
-echo "<h2>Releases</h2><ul>" >>"$INDEXFILE"
-for REL in ${OUTDIR}/releases/*; do
-    [[ -d "$REL" ]] || continue
-    REL=$( basename "$REL" )
-    echo "<li><a href=\"/raml/releases/${REL}\">${REL}</a></li>" >>"$INDEXFILE"
+for VISIBILITY in Private Public; do
+    VISVAL=$( echo "$VISIBILITY" | tr 'A-Z' 'a-z' )
+    echo "<h2>${VISIBILITY} Releases</h2><ul>" >>"$INDEXFILE"
+    for REL in ${OUTDIR}/releases/${VISVAL}/*; do
+        [[ -d "$REL" ]] || continue
+        REL=$( basename "$REL" )
+        echo "<li><a href=\"/raml/releases/${VISVAL}/${REL}\">${REL}</a></li>" >>"$INDEXFILE"
 
-    RELDIR="${OUTDIR}/releases/${REL}"
-    RELINDEX="${RELDIR}/index.html"
-    echo "<html><body>" >"$RELINDEX"
-    for RAML in ${RELDIR}/*.raml; do
-        BASENAME=$( basename "$RAML" )
-        LINKNAME=$( basename "$RAML" .raml )
-        echo "<a href=\"/?raml=raml/releases/${REL}/${BASENAME}\">${LINKNAME}</a><br/>" \
-            >>"$RELINDEX"
+        RELDIR="${OUTDIR}/releases/${VISVAL}/${REL}"
+        RELINDEX="${RELDIR}/index.html"
+        echo "<html><body>" >"$RELINDEX"
+        for RAML in ${RELDIR}/*.raml; do
+            BASENAME=$( basename "$RAML" )
+            LINKNAME=$( basename "$RAML" .raml )
+            echo "<a href=\"/?raml=raml/releases/${VISVAL}/${REL}/${BASENAME}\">${LINKNAME}</a><br/>" \
+                >>"$RELINDEX"
+        done
+        echo "</body></html>" >>"$RELINDEX"
     done
-    echo "</body></html>" >>"$RELINDEX"
-done
-echo "</ul>" >>"$INDEXFILE"
+    echo "</ul>" >>"$INDEXFILE"
 
-echo "<h2>Versions</h2><ul>" >>"$INDEXFILE"
-for VERS in ${OUTDIR}/versions/*; do
-    [[ -d "$VERS" ]] || continue
-    VERS=$( basename "$VERS" )
-    echo "<li><a href=\"/raml/versions/${VERS}\">Version ${VERS}</a></li>" >>"$INDEXFILE"
+    echo "<h2>${VISIBILITY} Versions</h2><ul>" >>"$INDEXFILE"
+    for VERS in ${OUTDIR}/versions/${VISVAL}/*; do
+        [[ -d "$VERS" ]] || continue
+        VERS=$( basename "$VERS" )
+        echo "<li><a href=\"/raml/versions/${VISVAL}/${VERS}\">Version ${VERS}</a></li>" >>"$INDEXFILE"
 
-    VERSDIR="${OUTDIR}/versions/${VERS}"
-    VERSINDEX="${VERSDIR}/index.html"
-    echo "<html><body>" >"$VERSINDEX"
-    for RAML in ${VERSDIR}/*.raml; do
-        BASENAME=$( basename "$RAML" )
-        LINKNAME=$( basename "$RAML" .raml )
-        echo "<a href=\"/?raml=raml/versions/${VERS}/${BASENAME}\">${LINKNAME}</a><br/>" \
-            >>"$VERSINDEX"
+        VERSDIR="${OUTDIR}/versions/${VISVAL}/${VERS}"
+        VERSINDEX="${VERSDIR}/index.html"
+        echo "<html><body>" >"$VERSINDEX"
+        for RAML in ${VERSDIR}/*.raml; do
+            BASENAME=$( basename "$RAML" )
+            LINKNAME=$( basename "$RAML" .raml )
+            echo "<a href=\"/?raml=raml/versions/${VISVAL}/${VERS}/${BASENAME}\">${LINKNAME}</a><br/>" \
+                >>"$VERSINDEX"
+        done
+        echo "</body></html>" >>"$VERSINDEX"
     done
-    echo "</body></html>" >>"$VERSINDEX"
+    echo "</ul>" >>"$INDEXFILE"
 done
-echo "</ul>" >>"$INDEXFILE"
 
 echo "</body></html>" >>"$INDEXFILE"
 
