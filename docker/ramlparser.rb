@@ -29,34 +29,46 @@ else
   FileUtils.mkdir_p(outputdir) or abort "Failed to create directory: #{outputdir}"
 end
 
-versions = [ '' ]
-while (version = versions.shift)
-  seen_versions = {}
-  Dir[File.join(inputdir, "*.raml")].each do |inputfile|
+# Get a list of all available "Since" values
+versions = {}
+ramlfiles = Dir[File.join(inputdir, '*.raml')]
+ramlfiles.each do |ramlfile|
+  raml = RAML.new(ramlfile)
+  raml.walknodes do |node, keys|
+    next unless node.has_key?('description')
+    next unless node['description'].is_a?(String)
+    since = node['description'].value_of('Since')
+    versions[since] = true if since.length > 0
+  end
+end
+abort 'No "Since:" tags found in any of the RAML files' if versions.empty?
+
+puts "Generating RAMLs for versions: #{versions.keys.sort}"
+versions.keys.sort.each do |version|
+  ramlfiles.each do |inputfile|
     log "Processing file: #{inputfile}, version: #{version}" \
       if version.length > 0
 
     raml = RAML.new(inputfile)
-    v = raml.filternodes(version)
-    seen_versions.merge!(v)
+    raml.filternodes do |node, keys|
+      if (node.has_key?('description') and node['description'].is_a?(String))
+        since = node['description'].value_of('Since')
 
-    if (version.length > 0)
-      # Generate version-specific RAML file
-      outversdir = File.join(outputdir, version)
-      Dir.mkdir(outversdir) unless Dir.exists?(outversdir)
-
-      outvers = File.join(outversdir, File.basename(inputfile))
-      puts "Generating file: #{outvers}"
-      File.open(outvers, 'w') do |f|
-        f.write raml.dump
+        # Drop nodes with a "since" value greater than specified version
+        since.greaterThanVersion(version)
       end
     end
-  end
 
-  if (version.length < 1)
-    # First run -- populate versions list with seen versions
-    versions = seen_versions.keys.sort
-    puts "Generating RAMLs for versions: #{versions}"
+    # Generate version-specific RAML file
+    outversdir = File.join(outputdir, version)
+    Dir.mkdir(outversdir) unless Dir.exists?(outversdir)
+
+    outvers = File.join(outversdir, File.basename(inputfile))
+    puts "Generating file: #{outvers}"
+    File.open(outvers, 'w') do |f|
+      f.write raml.dump
+    end
+
   end
 end
 

@@ -121,8 +121,12 @@ class RAML < Resource
     super(YAML.load(input))
   end
 
-  def filternodes(version)
-    return _filternodes(@obj, version)
+  def walknodes(&block)
+    return _walknodes(@obj, [], :filter => false, &block)
+  end
+
+  def filternodes(&block)
+    return _walknodes(@obj, [], :filter => true, &block)
   end
 
   def dump
@@ -133,26 +137,22 @@ class RAML < Resource
 
   private
 
-  def _filternodes(node, version)
-    seen_versions = {}
-    return seen_versions unless node.is_a?(Hash)
+  def _walknodes(node, keys, options={}, &block)
+    return unless node.is_a?(Hash)
+
+    do_filter = options[:filter] || false
 
     node.keys.each do |key|
       next unless node[key].is_a?(Hash)
 
-      if (node[key].has_key?('description') and
-          node[key]['description'].is_a?(String))
-        since = node[key]['description'].value_of('Since')
-        if (version and version.length > 0 and since.greaterThanVersion(version))
-          node.delete(key)
-        elsif (since.length > 0)
-          seen_versions[since] = true
-        end
+      nkeys = keys + [key]
+      drop_node = block.call(node[key], nkeys)
+      if (do_filter and drop_node)
+        node.delete(key)
       end
-      subversions = _filternodes(node[key], version) if node.has_key?(key)
-      seen_versions.merge!(subversions) if subversions
+
+      _walknodes(node[key], nkeys, options, &block) if node.has_key?(key)
     end
-    return seen_versions
   end
 
 end
