@@ -14,7 +14,7 @@ if (Dir.exists?(outputdir))
   abort "Output directory not empty: #{outputdir.sub(/^\/raml\//, '')}" \
     unless Dir["#{outputdir}/*"].empty?
 else
-  log "Creating directory: #{outputdir}"
+  puts "Creating directory: #{outputdir}"
   Dir.mkdir(outputdir) or abort "Failed to create directory: #{outputdir}"
 end
 
@@ -25,11 +25,13 @@ Dir[File.join(inputdir, '*.raml')].each do |inputfile|
 
   list = []
   raml.all_resources.each do |res|
-    entitlement = res.value_of('entitlement')
-    list.push([ res.uri, res.clean_description, res.since, res.value_of('entitlement') ])
+    res.actions.each do |act|
+      entitlement = act.value_of('entitlement')
+      list.push([ act.type.upcase, res.uri, act.description, act.since, act.visibility, entitlement ])
+    end
   end
 
-  headers = %w( URI Description Since Entitlement )
+  headers = %w( Action URI Description Since Visibility Entitlement )
   CSV.open(outputfile, 'w', :headers => headers, :write_headers => true) do |csv|
     list.each do |row|
       csv << row

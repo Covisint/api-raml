@@ -55,17 +55,25 @@ end
 class Resource
   include DescriptionParser
 
-  def initialize(dict, uri='', inheritedSince='0.0')
+  def initialize(dict, uri='', inheritedSince='0.0', inheritedVisibility='public')
     @uri = uri
     @obj = dict
     localSince = value_of('since')
     @since = localSince.greaterThanVersion(inheritedSince) \
            ? localSince \
            : inheritedSince
+    localVisibility = value_of('visibility')
+    if (inheritedVisibility == 'private')
+      @visibility = inheritedVisibility
+    elsif (localVisibility.length > 0)
+      @visibility = localVisibility
+    else
+      @visibility = 'public'
+    end
   end
 
   def resources
-    @obj.keys.grep(/^\//).map {|e| Resource.new(@obj[e], File.join(@uri, e), @since)}
+    @obj.keys.grep(/^\//).map {|e| Resource.new(@obj[e], File.join(@uri, e), @since, @visibility)}
   end
 
   def all_resources
@@ -78,24 +86,52 @@ class Resource
   end
 
   def actions
-    @obj.keys.find_all{|k| k =~ /^(get|put|post|delete)$/}.map{|e| Action.new(@obj[e], e)}
+    @obj.keys.find_all{|k| k =~ /^(get|put|post|delete)$/}.map{|e| Action.new(@obj[e], e, @since, @visibility)}
   end
 
-  attr_reader :uri, :since
+  def method_missing(method, *args, &block)
+    if (@obj.has_key?(method))
+      return @obj[method]
+    end
+    return ''
+  end
+
+  attr_reader :since, :uri, :visibility
 
 end
 
 class Action
   include DescriptionParser
 
-  def initialize(dict, action)
+  def initialize(dict, action, inheritedSince='0.0', inheritedVisibility='public')
     @action = action
     @obj = dict
+    localSince = value_of('since')
+    @since = localSince.greaterThanVersion(inheritedSince) \
+           ? localSince \
+           : inheritedSince
+    localVisibility = value_of('visibility')
+    if (inheritedVisibility == 'private')
+      @visibility = inheritedVisibility
+    elsif (localVisibility.length > 0)
+      @visibility = localVisibility
+    else
+      @visibility = 'public'
+    end
   end
 
   def type
     return @action
   end
+
+  def method_missing(method, *args, &block)
+    if (@obj.has_key?(method))
+      return @obj[method]
+    end
+    return ''
+  end
+
+  attr_reader :since, :visibility
 
 end
 
