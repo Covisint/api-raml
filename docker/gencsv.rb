@@ -27,7 +27,8 @@ Dir[File.join(inputdir, '*.raml')].each do |inputfile|
   raml.all_resources.each do |res|
     res.actions.each do |act|
       entitlement = act.value_of('entitlement')
-      list.push([ act.type.upcase, res.uri, act.description, act.since, act.visibility, entitlement ])
+      desc = act.clean_description.sub(/\s*\[Since:.*?\]/, '')
+      list.push([ act.type.upcase, res.uri, desc, act.since, act.visibility, entitlement ])
     end
   end
 
