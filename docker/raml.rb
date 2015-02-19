@@ -89,11 +89,20 @@ class Resource
     @obj.keys.find_all{|k| k =~ /^(get|put|post|delete)$/}.map{|e| Action.new(@obj[e], e, @since, @visibility)}
   end
 
+  def drop_resource(res)
+    @obj.delete_if {|key, value| key == res.uri}
+  end
+
+  def drop_action(action)
+    @obj.delete_if {|key, value| key == action.type}
+  end
+
   def method_missing(method, *args, &block)
     if (@obj.has_key?(method))
       return @obj[method]
     end
-    return ''
+    return '' if method == 'description'
+    raise "Unknown attribute: #{method}"
   end
 
   attr_reader :since, :uri, :visibility
@@ -103,8 +112,8 @@ end
 class Action
   include DescriptionParser
 
-  def initialize(dict, action, inheritedSince='0.0', inheritedVisibility='public')
-    @action = action
+  def initialize(dict, type, inheritedSince='0.0', inheritedVisibility='public')
+    @type = type
     @obj = dict
     localSince = value_of('since')
     @since = localSince.greaterThanVersion(inheritedSince) \
@@ -120,18 +129,97 @@ class Action
     end
   end
 
-  def type
-    return @action
+  def headers
+    return [] unless @obj.has_key?('headers') and @obj['headers'].is_a?(Hash)
+    @obj['headers'].keys.map {|k| Header.new(@obj['headers'][k], k, @since, @visibility)}
+  end
+
+  def responses
+    return [] unless @obj.has_key?('responses')
+    @obj['responses'].keys.map {|k| Response.new(@obj['responses'][k], k, @since, @visibility)}
+  end
+
+  def drop_header(header)
+    @obj['headers'].delete_if {|key, value| key == header.name}
+  end
+
+  def drop_response(response)
+    @obj['responses'].delete_if {|key, value| key == response.code}
   end
 
   def method_missing(method, *args, &block)
     if (@obj.has_key?(method))
       return @obj[method]
     end
-    return ''
+    return '' if method == 'description'
+    raise "Unknown attribute: #{method}"
   end
 
-  attr_reader :since, :visibility
+  attr_reader :since, :type, :visibility
+
+end
+
+class Header
+  include DescriptionParser
+
+  def initialize(dict, name, inheritedSince='0.0', inheritedVisibility='public')
+    @name = name
+    @obj = dict
+    localSince = value_of('since')
+    @since = localSince.greaterThanVersion(inheritedSince) \
+           ? localSince \
+           : inheritedSince
+    localVisibility = value_of('visibility')
+    if (inheritedVisibility == 'private')
+      @visibility = inheritedVisibility
+    elsif (localVisibility.length > 0)
+      @visibility = localVisibility
+    else
+      @visibility = 'public'
+    end
+  end
+
+  def method_missing(method, *args, &block)
+    if (@obj.has_key?(method))
+      return @obj[method]
+    end
+    return '' if method == 'description'
+    raise "Unknown attribute: #{method}"
+  end
+
+  attr_reader :name, :since, :visibility
+
+end
+
+class Response
+  include DescriptionParser
+
+  def initialize(dict, code, inheritedSince='0.0', inheritedVisibility='public')
+    @code = code
+    @obj = dict
+    localSince = value_of('since')
+    @since = localSince.greaterThanVersion(inheritedSince) \
+           ? localSince \
+           : inheritedSince
+    localVisibility = value_of('visibility')
+    if (inheritedVisibility == 'private')
+      @visibility = inheritedVisibility
+    elsif (localVisibility.length > 0)
+      @visibility = localVisibility
+    else
+      @visibility = 'public'
+    end
+  end
+
+  def method_missing(method, *args, &block)
+    if (@obj.has_key?(method))
+      return @obj[method]
+    end
+    return '' if method == 'description'
+    raise "Unknown attribute: #{method}"
+  end
+
+  attr_reader :code, :since, :visibility
 
 end
 
