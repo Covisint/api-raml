@@ -8,15 +8,18 @@ RUN apt-get update \
         npm \
         ruby
 
+# Install Bower and Grunt
+RUN npm install --silent -g bower grunt-cli
+
+# Install sass
+RUN gem install --no-ri --no-rdoc sass
+
 # Clone the Covisint api-console fork
 RUN git clone https://github.com/venkytv/api-console.git
 RUN rm -rf /api-console/dist/raml
 
 WORKDIR /api-console
 
-# Install Sass, Bower and Grunt
-RUN gem install --no-ri --no-rdoc sass
-RUN npm install --silent -g bower grunt-cli
 RUN npm install --silent
 RUN bower install --allow-root
 
