@@ -78,7 +78,9 @@ abort 'No "Since:" tags found in any of the RAML files' if versions.empty?
       outvers = File.join(outversdir, File.basename(inputfile))
       puts "Generating file: #{outvers}"
       File.open(outvers, 'w') do |f|
-        f.write raml.dump
+        collapse = ENV['collapse_empty'] || 'true'
+        collapse = (collapse == 'true') # Convert to boolean
+        f.write raml.dump(collapse)
       end
 
     end

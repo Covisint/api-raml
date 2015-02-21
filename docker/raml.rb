@@ -2,6 +2,12 @@ require 'fileutils'
 require 'open-uri'
 require 'yaml'
 
+DEBUG = false
+INHERITED_PARAMS = {
+  'is' => Array,
+  'urlParameters' => Hash,
+}
+
 module DescriptionParser
 
   def description
@@ -253,7 +259,12 @@ class RAML < Resource
     return _walknodes(@obj, [], :filter => true, &block)
   end
 
-  def dump
+  def dump(collapse_paths = false)
+    if (collapse_paths)
+      _collapse_paths(@obj)
+    else
+      puts "Not collapsing empty paths"
+    end
     raml = @obj.to_yaml
     raml.sub!(/^---/, "#%RAML 0.8");
     return raml
@@ -277,6 +288,53 @@ class RAML < Resource
 
       _walknodes(node[key], nkeys, options, &block) if node.has_key?(key)
     end
+  end
+
+  def _collapse_paths(node)
+    return unless node.is_a?(Hash)
+    node.keys.each do |key|
+      next unless key =~ /^\//
+      subnode = node[key]
+      if (not subnode.is_a?(Hash))
+          STDERR.puts "Removing resource: #{key}" if DEBUG
+      elsif _needs_collapsing(subnode)
+        # Inherited values
+        inherit = {}
+        INHERITED_PARAMS.each do |p|
+          inherit[p] = subnode[p] if subnode.has_key?(p)
+        end
+        subnode.keys.find_all {|k| k =~ /^\//}.each do |path|
+          collapsed_path = File.join(key, path)
+          STDERR.puts "Collapsing resource: #{collapsed_path}" if DEBUG
+          subsubnode = subnode[path]
+          INHERITED_PARAMS.keys.each do |p|
+            next if not (inherit.has_key?(p) and subnode.has_key?(p))
+            inherit[p] = INHERITED_PARAMS[p].new unless inherit.has_key?(p)
+            subsubnode[p] = INHERITED_PARAMS[p].new unless subsubnode.has_key?(p)
+            case INHERITED_PARAMS[p]
+            when Array
+              subsubnode[p] += inherit[p]
+              subsubnode[p].uniq!
+            when Hash
+              subsubnode[p] = inherit.merge(subsubnode)
+            else
+              abort "Unknown parameter type: #{p}"
+            end
+          end
+          node[collapsed_path] = subsubnode
+        end
+        node.delete(key)
+        # Node has been modified; re-examine it
+        _collapse_paths(node)
+      else
+        _collapse_paths(subnode)
+      end
+    end
+  end
+
+  def _needs_collapsing(node)
+    methods = node.keys.find_all {|k| k =~ /^(?:get|put|post|delete)/}
+    methods.empty?
   end
 
 end
