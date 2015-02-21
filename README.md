@@ -62,7 +62,8 @@ By default, the tool collapses empty nodes in the filtered RAML files.  To
 disable this behaviour, set the `collapse_empty` variable to false for the
 docker run.
 
-    $ docker run -it --rm -v "$PWD":/raml -p 9000:9000 -e "collapse_empty=false" venkytv/covisint-api-console
+    $ docker run -it --rm -v "$PWD":/raml -p 9000:9000 \
+      -e "collapse_empty=false" venkytv/covisint-api-console
 
 ### Debugging
 
