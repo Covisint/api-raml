@@ -14,6 +14,7 @@ To generate version-specific documentation and to run api-console to browse
 them, run the following from the directory containing the RAML files you want to
 use.
 
+    $ docker pull venkytv/covisint-api-console
     $ docker run -it --rm -v "$PWD":/raml -p 9000:9000 venkytv/covisint-api-console
 
 _The first time you run the `docker run` command, it will download a bunch of
