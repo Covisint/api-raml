@@ -33,7 +33,17 @@ end
 versions = {}
 ramlfiles = Dir[File.join(inputdir, '*.raml')]
 ramlfiles.each do |ramlfile|
-  raml = RAML.new(ramlfile)
+  raml = {}
+  begin
+    raml = RAML.new(ramlfile)
+  rescue Exception => e
+    STDERR.puts
+    STDERR.puts "Error parsing file: #{ramlfile}: #{e.message}"
+    STDERR.puts "[NOTE] Reported line numbers may be incorrect because of !include sections"
+    STDERR.puts
+    raise e
+  end
+
   raml.walknodes do |node, keys|
     next unless node.has_key?('description')
     next unless node['description'].is_a?(String)
