@@ -231,7 +231,7 @@ end
 
 class RAML < Resource
 
-  def initialize(infile)
+  def initialize(infile, baseuri = false)
     @linenumbers = {}
     inputdir = File.dirname(infile)
     input = open(infile, 'r:UTF-8') do |f|
@@ -282,6 +282,11 @@ class RAML < Resource
       STDERR.puts "[NOTE] Reported line numbers may be incorrect because of !include sections" if disclaimer
       STDERR.puts
       raise e
+    end
+
+    if (baseuri)
+      repl = (baseuri =~ /^https?:/ ? "#{baseuri}\\2" : "\\1#{baseuri}\\2")
+      data['baseUri'].sub!(/^(https?:\/\/)[^\/]+(.*)/, repl)
     end
 
     super(data)

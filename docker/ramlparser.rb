@@ -51,7 +51,7 @@ abort 'No "Since:" tags found in any of the RAML files' if versions.empty?
     ramlfiles.each do |inputfile|
       log "Processing file: #{inputfile}, version: #{version}"
 
-      raml = RAML.new(inputfile)
+      raml = RAML.new(inputfile, ENV['baseuri'] || ENV['baseUri'] || false)
       raml.filternodes do |node, keys|
         if (node.has_key?('description') and node['description'].is_a?(String))
           desc = node['description']
