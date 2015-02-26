@@ -59,6 +59,12 @@ within.
 
 ### Advanced
 
+To override the hostname part of the baseUri in the generated RAML files, set
+the `baseuri` variable.
+
+    $ docker run --rm -v "$PWD":/raml \
+      -e "baseuri=example.com" venkytv/covisint-api-console genraml
+
 By default, the tool collapses empty nodes in the filtered RAML files.  To
 disable this behaviour, set the `collapse_empty` variable to false for the
 docker run.
