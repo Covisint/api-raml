@@ -232,23 +232,59 @@ end
 class RAML < Resource
 
   def initialize(infile)
+    @linenumbers = {}
     inputdir = File.dirname(infile)
     input = open(infile, 'r:UTF-8') do |f|
       inlined_raml = ''
+      linenum = 0
+      cumlinenum = 0
       f.readlines.each do |line|
+        linenum += 1
         if (line !~ /^\s*#/ and line =~ /\!include\s+(.*)/)
           incfile = $1
           incfile = File.join(inputdir, incfile) unless File.exists?(incfile)
-          inc = open(incfile).read
-          inlined_raml += inc
+          open(incfile) do |i|
+            incline = 0
+            i.readlines.each do |inc|
+              inlined_raml += inc
+              incline += 1
+              cumlinenum += 1
+              @linenumbers[cumlinenum] = [ incfile, incline ]
+            end
+          end
         else
           inlined_raml += line
+          cumlinenum += 1
+          @linenumbers[cumlinenum] = [ infile, linenum ]
         end
       end
       inlined_raml
     end
 
-    super(YAML.load(input))
+    data = {}
+    begin
+      data = YAML.load(input)
+    rescue Exception => e
+      re = /\sat\sline\s(\d+)\scolumn\s(\d+)/
+      nmsg = e.message
+      disclaimer = true
+      if (e.message =~ re)
+        line = $1.to_i
+        column = $2
+        if (@linenumbers.has_key?(line))
+          nline = @linenumbers[line]
+          nmsg = " starting at line #{nline[1]} column #{column} in file \"#{nline[0]}\""
+          nmsg = e.message.dup.sub(re, nmsg)
+          disclaimer = false
+        end
+      end
+      STDERR.puts "Error parsing file: #{infile}: #{nmsg}"
+      STDERR.puts "[NOTE] Reported line numbers may be incorrect because of !include sections" if disclaimer
+      STDERR.puts
+      raise e
+    end
+
+    super(data)
   end
 
   def walknodes(&block)
