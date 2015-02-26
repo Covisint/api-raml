@@ -44,6 +44,13 @@ module DescriptionParser
     @extended_attributes
   end
 
+  def method_missing(method, *args, &block)
+    return @obj[method] if @obj.has_key?(method)
+    return @obj[method.to_s] if @obj.has_key?(method.to_s)
+    return '' if method == 'description' or method.to_s == 'description'
+    raise "Unknown attribute: #{method.to_s}"
+  end
+
   private
 
   def _extract_attributes(desc)
@@ -103,14 +110,6 @@ class Resource
     @obj.delete_if {|key, value| key == action.type}
   end
 
-  def method_missing(method, *args, &block)
-    if (@obj.has_key?(method))
-      return @obj[method]
-    end
-    return '' if method == 'description'
-    raise "Unknown attribute: #{method}"
-  end
-
   attr_reader :since, :uri, :visibility
 
 end
@@ -153,14 +152,6 @@ class Action
     @obj['responses'].delete_if {|key, value| key == response.code}
   end
 
-  def method_missing(method, *args, &block)
-    if (@obj.has_key?(method))
-      return @obj[method]
-    end
-    return '' if method == 'description'
-    raise "Unknown attribute: #{method}"
-  end
-
   attr_reader :since, :type, :visibility
 
 end
@@ -185,14 +176,6 @@ class Header
     end
   end
 
-  def method_missing(method, *args, &block)
-    if (@obj.has_key?(method))
-      return @obj[method]
-    end
-    return '' if method == 'description'
-    raise "Unknown attribute: #{method}"
-  end
-
   attr_reader :name, :since, :visibility
 
 end
@@ -215,14 +198,6 @@ class Response
     else
       @visibility = 'public'
     end
-  end
-
-  def method_missing(method, *args, &block)
-    if (@obj.has_key?(method))
-      return @obj[method]
-    end
-    return '' if method == 'description'
-    raise "Unknown attribute: #{method}"
   end
 
   attr_reader :code, :since, :visibility
