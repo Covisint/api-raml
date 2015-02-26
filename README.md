@@ -38,15 +38,14 @@ sure that the VM IP has not changed using the `boot2docker` command._
 To just generate version-specific RAML files without launching api-console, pass
 the "genraml" argument to the docker command line.  This will create a
 `dist/raml/versions` directory within your current directory and store the RAML files
-within versioned directories there.  It will also create a `dist/raml/releases`
-directory and copy the RAML files into release-specific subdirectories.
+within versioned directories there.
 
     $ docker run --rm -v "$PWD":/raml venkytv/covisint-api-console genraml
 
-__IMPORTANT__: Release information is picked up from the
-[docker/release-manifest.yml](docker/release-manifest.yml) file.  If this
-information is changed, the docker image needs to be rebuilt and pushed into
-Docker Hub.  See below for instructions on building the Docker image.
+If the current directory contains a `release-manifest.yml` file
+([example](https://github.com/Covisint/api-doc/blob/master/raml/release-manifest.yml)),
+the command will also create a `dist/raml/releases` directory and copy the RAML
+files into release-specific subdirectories.
 
 ### Generating CSV descriptions of RAML files
 
