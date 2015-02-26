@@ -36,6 +36,7 @@ else
     ln -s "$OUTDIR" "$OUTLINK"
 fi
 /api-console/ramlparser.rb "$INDIR" "$OUTDIR" "$MANIFEST"
+[[ $? -ne 0 ]] && exit 2
 
 NUMVERS=$( ls -1 "$OUTDIR" )
 if [[ -z "$NUMVERS" ]]; then
