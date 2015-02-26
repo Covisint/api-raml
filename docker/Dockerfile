@@ -30,7 +30,6 @@ COPY ./run-api-console /api-console/
 COPY ./raml.rb /api-console/
 COPY ./ramlparser.rb /api-console/
 COPY ./gencsv.rb /api-console/
-COPY ./release-manifest.yml /api-console/
 
 ENTRYPOINT [ "/api-console/run-api-console" ]
 CMD [ "grunt", "server" ]

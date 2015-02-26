@@ -87,21 +87,25 @@ abort 'No "Since:" tags found in any of the RAML files' if versions.empty?
   end
 
   if (manifest)
-    abort "Manifest file not found: #{manifest}" unless File.exists?(manifest)
-    puts "\nCopying #{visibility} RAMLs into release directories"
-    releases = YAML.load(File.open(manifest))
-    releases.keys.each do |rel|
-      reldir = File.join(outputbase, 'releases', visibility, rel.to_s)
-      FileUtils.mkdir_p(reldir)
+    if (File.exist?(manifest))
+      puts "\nCopying #{visibility} RAMLs into release directories"
+      releases = YAML.load(File.open(manifest))
+      releases.keys.each do |rel|
+        reldir = File.join(outputbase, 'releases', visibility, rel.to_s)
+        FileUtils.mkdir_p(reldir)
 
-      releases[rel].each do |r|
-        api = r.keys.first
-        vers = r[api]
-        infile = File.join(outputbase, 'versions', visibility, vers.to_s, api + '.raml')
-        outfile = File.join(reldir, api + '.raml')
-        puts "Creating #{outfile} (version #{vers})"
-        FileUtils.cp(infile, outfile)
+        releases[rel].each do |r|
+          api = r.keys.first
+          vers = r[api]
+          infile = File.join(outputbase, 'versions', visibility, vers.to_s, api + '.raml')
+          outfile = File.join(reldir, api + '.raml')
+          puts "Creating #{outfile} (version #{vers})"
+          FileUtils.cp(infile, outfile)
+        end
       end
+    else
+      STDERR.puts "WARNING: Release manifest not found: #{manifest}" unless File.exists?(manifest)
+      STDERR.puts "         Not generating release-specific versions"
     end
   end
 end
