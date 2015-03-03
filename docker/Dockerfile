@@ -16,9 +16,10 @@ RUN gem install --no-ri --no-rdoc sass
 
 # Clone the Covisint api-console fork
 RUN git clone https://github.com/venkytv/api-console.git
-RUN rm -rf /api-console/dist/raml
 
 WORKDIR /api-console
+RUN git fetch && git checkout 817ac0a658e0b7d168b60bc9f598e149592e4ddd
+RUN rm -rf /api-console/dist/raml
 
 RUN npm install --silent
 RUN bower install --allow-root

@@ -33,6 +33,8 @@ if $GENRAML; then
 else
     rm -rf ${OUTLINK}
     [[ -d "$OUTDIR" ]] || mkdir -p "$OUTDIR"
+    OUTLINKDIR=$( dirname "$OUTLINK" )
+    [[ -d "$OUTLINKDIR" ]] || mkdir -p "$OUTLINKDIR"
     ln -s "$OUTDIR" "$OUTLINK"
 fi
 /api-console/ramlparser.rb "$INDIR" "$OUTDIR" "$MANIFEST"
