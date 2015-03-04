@@ -218,6 +218,7 @@ class RAML < Resource
         if (line !~ /^\s*#/ and line =~ /\!include\s+(.*)/)
           incfile = $1
           incfile = File.join(inputdir, incfile) unless File.exists?(incfile)
+          incfile.chomp!
           open(incfile) do |i|
             incline = 0
             i.readlines.each do |inc|
