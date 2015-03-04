@@ -6,10 +6,23 @@ OUTLINK="/api-console/dist/raml"
 INDEXFILE="${OUTDIR}/index.html"
 
 GENRAML=false
+GENCSV=false
+GENWAR=false
+
+case "$1" in
+    genraml)    GENRAML=true ;;
+    gencsv)     GENCSV=true ;;
+    genwar)     GENWAR=true ;;
+esac
+
+GENRAML=false
 [[ "$1" == 'genraml' ]] && GENRAML=true
 
 GENCSV=false
 [[ "$1" == 'gencsv' ]] && GENCSV=true
+
+GENWAR=false
+[[ "$1" == 'genwar' ]] && GENWAR=true
 
 NUMRAMLS=$( ls -1 ${INDIR}/*.raml )
 if [[ -z "$NUMRAMLS" ]]; then
@@ -46,6 +59,28 @@ if [[ -z "$NUMVERS" ]]; then
     exit 2
 fi
 $GENRAML && exit 0
+
+if $GENWAR; then
+    echo -e "\nCopying public releases into api-console assets"
+    rm -rf /api-console/src/assets/raml/*
+    cp -r ${OUTDIR}/releases/public/* /api-console/src/assets/raml/
+
+    echo -e "\nGenerating war"
+    grunt buildwar
+
+    WAR='/api-console/dist/api-console.war'
+    if [[ ! -f "$WAR" ]]; then
+        echo -e "\nERROR: Failed to generate war"
+        exit 2
+    fi
+
+    echo -e "\nCopying war into dist/"
+    OUTDIR="${INDIR}/dist"
+    mkdir -p "$OUTDIR"
+    cp "$WAR" "$OUTDIR"
+
+    exit
+fi
 
 echo -e "Generating $INDEXFILE"
 echo "<html><body>" >"$INDEXFILE"

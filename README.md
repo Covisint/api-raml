@@ -56,6 +56,14 @@ within.
 
     $ docker run --rm -v "$PWD":/raml venkytv/covisint-api-console gencsv
 
+### Generating the api-console war file
+
+To generate a war file for deployment into the developer portal, pass the
+"genwar" argument to the docker command line.  This will create an
+"api-console.war" file under the "dist" directory within your current directory.
+
+    $ docker run --rm -v "$PWD":/raml venkytv/covisint-api-console genwar
+
 ### Advanced
 
 To override the hostname part of the baseUri in the generated RAML files, set

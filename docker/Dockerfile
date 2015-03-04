@@ -18,7 +18,7 @@ RUN gem install --no-ri --no-rdoc sass
 RUN git clone https://github.com/venkytv/api-console.git
 
 WORKDIR /api-console
-RUN git fetch && git checkout 817ac0a658e0b7d168b60bc9f598e149592e4ddd
+RUN git fetch && git checkout 50a44d4e9c73b188c3ea72b671066254a69de1f8
 RUN rm -rf /api-console/dist/raml
 
 RUN npm install --silent
