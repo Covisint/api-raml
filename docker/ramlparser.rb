@@ -43,6 +43,7 @@ ramlfiles.each do |ramlfile|
 end
 abort 'No "Since:" tags found in any of the RAML files' if versions.empty?
 
+methods = %( get put post delete )
 [ 'public', 'private' ].each do |visibility|
   visibility_filter = (visibility == 'public' ? 'public' : nil)
 
@@ -52,8 +53,10 @@ abort 'No "Since:" tags found in any of the RAML files' if versions.empty?
       log "Processing file: #{inputfile}, version: #{version}"
 
       raml = RAML.new(inputfile, ENV['baseuri'] || ENV['baseUri'] || false)
+      sinces = {}
       raml.filternodes do |node, keys|
         if (node.has_key?('description') and node['description'].is_a?(String))
+          nkey = keys.join('|')
           desc = node['description']
           since = desc.value_of('Since')
           vis = desc.value_of('Visibility').downcase
@@ -62,7 +65,21 @@ abort 'No "Since:" tags found in any of the RAML files' if versions.empty?
           node['description'].gsub!(/\s*\[.*?\]\s*$/, '')
 
           # Reinstate the "Since" token
-          node['description'] += " [Since:#{since}]" if since.length > 0
+          if (since.length < 1)
+            # Pick the inherited since value
+            start = keys.length - 1
+            start.downto(1) do |len|
+              ckey = keys.slice(0, len).join('|')
+              if sinces.has_key?(ckey)
+                since = sinces[ckey]
+                break
+              end
+            end
+          end
+          since = '0.0' if since.length < 1
+          sinces[nkey] = since
+          node['description'] += " _[Since:#{since}]_" \
+            if methods.include?(keys[-1].to_s)
 
           # Drop nodes with a "since" value greater than specified version
           # or those with a visibility not matching specified value

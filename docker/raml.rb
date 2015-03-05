@@ -24,7 +24,7 @@ module DescriptionParser
       while (desc.sub!(/\s*\[.*?\]\s*$/, ''))
       end
       s = since
-      desc += " [Since:#{s}]" unless s == '0.0'
+      desc += " [Since:#{s}]"
       @clean_description = desc
     end
     @clean_description
