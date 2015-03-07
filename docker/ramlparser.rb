@@ -15,7 +15,8 @@ end
 inputdir = ARGV.shift
 outputbase = ARGV.shift
 manifest = ARGV.shift
-if (not inputdir or not outputbase or not File.directory?(inputdir))
+if (not inputdir or not outputbase or
+    not (File.directory?(inputdir) or inputdir =~ /\.raml$/))
   abort "usage: #{$0} <raml-dir> <output-dir> [<release-manifest>]"
 end
 
@@ -31,7 +32,7 @@ end
 
 # Get a list of all available "Since" values
 versions = {}
-ramlfiles = Dir[File.join(inputdir, '*.raml')]
+ramlfiles = File.directory?(inputdir) ? Dir[File.join(inputdir, '*.raml')] : [ inputdir ]
 ramlfiles.each do |ramlfile|
   raml = RAML.new(ramlfile)
   raml.walknodes do |node, keys|

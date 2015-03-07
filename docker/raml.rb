@@ -1,4 +1,5 @@
 require 'fileutils'
+require 'json'
 require 'open-uri'
 require 'yaml'
 
@@ -258,6 +259,21 @@ class RAML < Resource
       STDERR.puts "[NOTE] Reported line numbers may be incorrect because of !include sections" if disclaimer
       STDERR.puts
       raise e
+    end
+
+    %w( schemas ).each do |node|
+      if (data.has_key?(node))
+        data[node].each do |item|
+          key = item.keys.first
+          value = item[key]
+          begin
+            p = JSON.parse(value)
+          rescue Exception => e
+            abort "Error parsing JSON element in #{infile}: node \"#{node}\" > \"#{key}\": \"#{e.class}: #{e.message.split("\n").first}\"\n" +
+                  "Please validate the JSON using something like http://jsonformatter.curiousconcept.com/"
+          end
+        end
+      end
     end
 
     if (baseuri)
