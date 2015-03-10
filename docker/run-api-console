@@ -15,15 +15,6 @@ case "$1" in
     genwar)     GENWAR=true ;;
 esac
 
-GENRAML=false
-[[ "$1" == 'genraml' ]] && GENRAML=true
-
-GENCSV=false
-[[ "$1" == 'gencsv' ]] && GENCSV=true
-
-GENWAR=false
-[[ "$1" == 'genwar' ]] && GENWAR=true
-
 NUMRAMLS=$( ls -1 ${INDIR}/*.raml )
 if [[ -z "$NUMRAMLS" ]]; then
     echo -e "\nNo RAML files found under $INDIR"
