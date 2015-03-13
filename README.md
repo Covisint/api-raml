@@ -81,10 +81,56 @@ docker run.
 
 ### Debugging
 
-To get a shell within the docker container, pass the "bash" argument to the
+To drop into a shell within the docker container after generating the custom , pass the "bash" argument to the
 command line:
 
     $ docker run -it --rm -v "$PWD":/raml -p 9000:9000 venkytv/covisint-api-console bash
+
+## Simplified usage
+
+The [util/api-console](util/api-console) script provides a simpler way to invoke
+all the above commands.  It requires `ruby` and the `colorize` gem (`gem install
+colorize`).
+
+Examples:
+
+Bring up the api-console using the RAML in the api-doc submodule:
+
+    $ util/api-console
+
+Use RAML files located in a different directory:
+
+    $ util/api-console ~/my-raml-files
+
+Point the api-console to a specific Apigee instance/environment:
+
+    $ util/api-console -l     # List available Apigee environments
+    $ util/api-console prod   # Point the api-console to the production instance
+
+Bring up the api-console on a specific port (default: 9000):
+
+    $ util/api-console 9000
+
+Do a `docker pull` before execution:
+
+    $ util/api-console -p
+
+Generate the api-console war file:
+
+    $ util/api-console genwar
+
+Drop into a shell inside the docker container:
+
+    $ util/api-console bash
+
+Multiple options:
+
+    $ util/api-console prod genwar  # Generate war file for production instance
+    $ util/api-console -p ~/my-raml-files rnd 9002  # Pull docker image, use custom RAML files, map to port 9002
+
+Usage help:
+
+    $ util/api-console -h
 
 ## Building the docker image
 

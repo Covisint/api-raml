@@ -1,0 +1,121 @@
+#!/usr/bin/env ruby
+
+require 'colorize'
+require 'erb'
+require 'fileutils'
+require 'optparse'
+require 'pathname'
+
+BASEURI = {
+  perf:     'http://54.172.168.251:9040',
+  prod:     'api.covapp.io',
+  proddev:  'apidev.covapp.io',
+  rnd:      'api.covisintrnd.com',
+}
+
+NONINTERACTIVE_COMMANDS = {
+  'genwar' => true,
+  'gencsv' => true,
+  'genraml' => true,
+}
+
+DOCKER_IMAGE = 'venkytv/covisint-api-console'
+
+OPTIONS = {
+  mount:    { key: '-v', modified: false },
+  port:     { key: '-p', modified: false },
+  baseuri:  { key: '-e', modified: false },
+}
+
+DEFDIR = Pathname.new(File.dirname File.realpath $0) + '../api-doc/raml'
+
+# Defaults
+env = :rnd
+port = 9000
+dir = DEFDIR
+
+params = {}
+OptionParser.new do |opts|
+  opts.banner = "usage: #{$0} [options] [<raml-dir>] [<apigee-env>] [<port>]"
+
+  opts.on_tail('-h', '--help', 'Display this message') do |v|
+    puts opts
+    exit
+  end
+
+  opts.on('-l', '--list-env', 'List apigee environments') do |v|
+    puts "APIGEE ENVIRONMENTS\n\n"
+    BASEURI.keys.sort.each {|key| puts "#{key}\t(#{BASEURI[key]})"}
+    puts
+    exit
+  end
+
+  opts.on('-p', '--pull', 'Do a "docker pull" before execution') do |v|
+    params[:pull] = v
+  end
+end.parse!
+
+abort "Docker environment not available" \
+  unless ENV['DOCKER_HOST']
+
+if (ARGV.first =~ /^(?:\.|\/)/)
+  dir = Pathname.new(File.absolute_path(ARGV.shift))
+  OPTIONS[:mount][:modified] = true
+end
+OPTIONS[:mount][:arg] = "#{dir}:/raml"
+
+if (not ARGV.empty? and BASEURI.has_key?(ARGV.first.to_sym))
+  env = ARGV.shift.to_sym
+  OPTIONS[:baseuri][:modified] = true
+end
+OPTIONS[:baseuri][:arg] = "baseuri=#{BASEURI[env]}"
+
+if (ARGV.first.to_i > 0 and ARGV.first.to_i < 65535)
+  port = ARGV.shift.to_i
+  OPTIONS[:port][:modified] = true
+end
+OPTIONS[:port][:arg] = "#{port}:9000"
+
+# Remove 'dist/' directory
+unless ARGV.empty? or ARGV.first == 'bash' or OPTIONS[:mount][:modified]
+  outbase = dir + 'dist'
+  if (File.exists?(outbase))
+    puts "\nRemoving directory: #{outbase}".yellow
+    FileUtils.rm_r(outbase)
+  end
+end
+
+# Return closure which colorises docker commandline arguments when necessary
+def colorised(enable)
+  return ->(x) {
+    if (OPTIONS.key?(x))
+      OPTIONS[x][:key] + ' ' +
+        ((enable and OPTIONS[x][:modified]) ?
+          OPTIONS[x][:arg].red.underline :
+          OPTIONS[x][:arg])
+    else
+      enable ? x.red : x
+    end
+  }
+end
+
+# Pull down latest docker image
+if (params[:pull])
+  pull_cmd = "docker pull #{DOCKER_IMAGE}"
+  puts "\n", pull_cmd, "\n"
+  system(pull_cmd)
+end
+
+command_tmpl = %Q(docker run --rm
+                  <% unless NONINTERACTIVE_COMMANDS.key?(ARGV.first) %>-it <%= renderer.call(:port) %><% end %>
+                  <%= renderer.call(:mount) %>
+                  <%= renderer.call(:baseuri) %>
+                  #{DOCKER_IMAGE}
+                  <% ARGV.each do |arg| %><%= renderer.call(arg) %><% end %>).gsub(/\s+/, ' ')
+erb = ERB.new(command_tmpl)
+
+renderer = colorised(true)
+puts "\n", erb.result, "\n"
+
+renderer = colorised(false)
+exec erb.result
