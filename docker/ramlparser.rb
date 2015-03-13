@@ -65,22 +65,24 @@ methods = %( get put post delete )
           # Strip tokens from description
           node['description'].gsub!(/\s*\[.*?\]\s*$/, '')
 
-          # Reinstate the "Since" token
-          if (since.length < 1)
-            # Pick the inherited since value
-            start = keys.length - 1
-            start.downto(1) do |len|
-              ckey = keys.slice(0, len).join('|')
-              if sinces.has_key?(ckey)
-                since = sinces[ckey]
-                break
+          # Reinstate the "Since" token for private RAMLs
+          if (visibility == 'private')
+            if (since.length < 1)
+              # Pick the inherited since value
+              start = keys.length - 1
+              start.downto(1) do |len|
+                ckey = keys.slice(0, len).join('|')
+                if sinces.has_key?(ckey)
+                  since = sinces[ckey]
+                  break
+                end
               end
             end
+            since = '0.0' if since.length < 1
+            sinces[nkey] = since
+            node['description'] += " _[Since:#{since}]_" \
+              if methods.include?(keys[-1].to_s)
           end
-          since = '0.0' if since.length < 1
-          sinces[nkey] = since
-          node['description'] += " _[Since:#{since}]_" \
-            if methods.include?(keys[-1].to_s)
 
           # Drop nodes with a "since" value greater than specified version
           # or those with a visibility not matching specified value
