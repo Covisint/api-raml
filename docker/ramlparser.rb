@@ -4,7 +4,7 @@ require 'fileutils'
 require 'yaml'
 require File.join(File.dirname($0), 'raml')
 
-$DEBUG = false
+$DEBUG = ENV['DEBUG'] || false
 $VERSION = ''
 
 def log(msg)
@@ -54,40 +54,55 @@ methods = %( get put post delete )
       log "Processing file: #{inputfile}, version: #{version}"
 
       raml = RAML.new(inputfile, ENV['baseuri'] || ENV['baseUri'] || false)
-      sinces = {}
+      annotations = {}
+      defaults = {
+        since: '1.0',
+        visibility: 'public'
+      }
       raml.filternodes do |node, keys|
         if (node.has_key?('description') and node['description'].is_a?(String))
           nkey = keys.join('|')
           desc = node['description']
-          since = desc.value_of('Since')
-          vis = desc.value_of('Visibility').downcase
+
+          tokens = {
+            since: desc.value_of('Since'),
+            visibility: desc.value_of('Visibility').downcase,
+            entitlement: desc.value_of('Entitlement'),
+          }
 
           # Strip tokens from description
           node['description'].gsub!(/\s*\[.*?\]\s*$/, '')
 
-          # Reinstate the "Since" token for private RAMLs
+          # Reinstate annotations for private RAMLs
           if (visibility == 'private')
-            if (since.length < 1)
-              # Pick the inherited since value
-              start = keys.length - 1
-              start.downto(1) do |len|
-                ckey = keys.slice(0, len).join('|')
-                if sinces.has_key?(ckey)
-                  since = sinces[ckey]
-                  break
+            [ :since, :visibility ].each do |token|
+              annotation = tokens[token]
+              if (tokens[token].length < 1)
+                # Pick the inherited token value
+                start = keys.length - 1
+                start.downto(1) do |len|
+                  ckey = keys.slice(0, len).join('|')
+                  if annotations.has_key?(ckey)
+                    annotation = annotations[ckey][token]
+                    break
+                  end
                 end
               end
+              annotation = defaults[token] if annotation.length < 1
+              annotations[nkey] = {} unless annotations.key?(nkey)
+              annotations[nkey][token] = annotation
+              node['description'] += " _[#{token.to_s.capitalize}:#{annotation}]_" \
+                if methods.include?(keys[-1].to_s)
             end
-            since = '0.0' if since.length < 1
-            sinces[nkey] = since
-            node['description'] += " _[Since:#{since}]_" \
-              if methods.include?(keys[-1].to_s)
+
+            node['description'] += " _[Entitlement:#{tokens[:entitlement]}]_" \
+              if tokens[:entitlement].length > 0
           end
 
           # Drop nodes with a "since" value greater than specified version
           # or those with a visibility not matching specified value
-          since.greaterThanVersion(version) \
-            || (vis.length > 0 && visibility_filter && vis != visibility_filter)
+          tokens[:since].greaterThanVersion(version) \
+            || (tokens[:visibility].length > 0 && visibility_filter && tokens[:visibility] != visibility_filter)
         end
       end
 
