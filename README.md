@@ -10,6 +10,8 @@ the generated documentation.
 
 ## Usage
 
+(Note: For a simpler alternative, have a look at the "Simplified usage" section below.)
+
 To generate version-specific documentation and to run api-console to browse
 them, run the following from the directory containing the RAML files you want to
 use.
