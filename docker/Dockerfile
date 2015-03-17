@@ -27,6 +27,10 @@ RUN bower install --allow-root
 # api-console listens on port 9000
 EXPOSE 9000
 
+# Updates to api-console which do not affect npm and bower.
+# This reduces the amount of docker layers which get invalidated.
+RUN git fetch && git checkout 723e382d6e7bd5bb79c56a17959707e9df9117be
+
 COPY ./run-api-console /api-console/
 COPY ./raml.rb /api-console/
 COPY ./ramlparser.rb /api-console/
