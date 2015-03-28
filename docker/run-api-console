@@ -35,8 +35,8 @@ if $GENRAML; then
     OUTDIR="${INDIR}/dist/raml"
     mkdir -p "$OUTDIR"
 else
-    rm -rf ${OUTLINK}
-    [[ -d "$OUTDIR" ]] || mkdir -p "$OUTDIR"
+    rm -rf ${OUTDIR} ${OUTLINK}
+    mkdir -p "$OUTDIR"
     OUTLINKDIR=$( dirname "$OUTLINK" )
     [[ -d "$OUTLINKDIR" ]] || mkdir -p "$OUTLINKDIR"
     ln -s "$OUTDIR" "$OUTLINK"
