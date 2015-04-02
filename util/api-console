@@ -8,7 +8,7 @@ require 'pathname'
 
 BASEURI = {
   perf:     'http://54.172.168.251:9040',
-  prod:     'api.covapp.io',
+  prod:     'api.us1.covisint.com',
   proddev:  'apidev.covapp.io',
   rnd:      'api.covisintrnd.com',
   sandbox:  'http://54.172.168.251:9001',
