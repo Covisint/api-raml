@@ -1,6 +1,7 @@
 require 'fileutils'
 require 'json'
 require 'open-uri'
+require 'stringio'
 require 'yaml'
 
 DEBUG = false
@@ -300,10 +301,35 @@ class RAML < Resource
     end
     raml = @obj.to_yaml
     raml.sub!(/^---/, "#%RAML 0.8");
-    return raml
+
+    io = StringIO.new(raml)
+    out = ''
+    while (line = io.gets)
+      line.chomp!
+      if (line =~ /^(\s*)description:\s+(".*)/)
+        (desc, line) = _fixdesc(io, "#{$1}description: #{$2}", $1)
+        out += desc + "\n"
+      end
+      out += line + "\n"
+    end
+
+    return out
   end
 
   private
+
+  def _fixdesc(io, line, spaces)
+    out = line
+    nline = ''
+    while (nline = io.gets)
+      nline.chomp!
+      if (nline =~ /^#{spaces}\s+(.*)/)
+        out += ' ' + $1
+      else
+        return out, nline
+      end
+    end
+  end
 
   def _walknodes(node, keys, options={}, &block)
     return unless node.is_a?(Hash)

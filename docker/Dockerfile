@@ -1,12 +1,11 @@
-FROM ubuntu
+FROM cloudgear/ruby:2.2-minimal
 MAINTAINER Venky <venky@duh-uh.com>
 
 RUN apt-get update \
     && apt-get install -y \
         git \
         nodejs-legacy \
-        npm \
-        ruby
+        npm
 
 # Install Bower and Grunt
 RUN npm install --silent -g bower grunt-cli
