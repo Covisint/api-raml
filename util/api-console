@@ -11,7 +11,7 @@ BASEURI = {
   prod:     'api.us1.covisint.com',
   proddev:  'apidev.covapp.io',
   rnd:      'api.covisintrnd.com',
-  sandbox:  'http://54.172.168.251:9001',
+  sandbox:  'http://localhost:9101',
 }
 
 NONINTERACTIVE_COMMANDS = {
