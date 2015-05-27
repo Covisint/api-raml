@@ -7,10 +7,14 @@ require 'optparse'
 require 'pathname'
 
 BASEURI = {
-  perf:     'http://54.172.168.251:9040',
   prod:     'api.us1.covisint.com',
   proddev:  'apidev.covapp.io',
-  rnd:      'api.covisintrnd.com',
+  'nonprod-qa': 'https://apiqa.np.covapp.io',
+  'nonprod-stg': 'https://apistg.np.covapp.io',
+  'nonprod-qa-dev': 'http://localhost:19002',
+  'nonprod-stg-dev': 'http://localhost:29002',
+  'nonprod-platform': 'http://localhost:9001',
+  'nonprod-platform-dev': 'http://localhost:9002',
   sandbox:  'http://localhost:9101',
 }
 
@@ -46,7 +50,11 @@ OptionParser.new do |opts|
 
   opts.on('-l', '--list-env', 'List apigee environments') do |v|
     puts "APIGEE ENVIRONMENTS\n\n"
-    BASEURI.keys.sort.each {|key| puts "#{key}\t(#{BASEURI[key]})"}
+    envs = BASEURI.keys
+    maxlen = envs.max_by {|e| e.length}.length
+    envs.sort.each do |key|
+      printf "%-#{maxlen}s  (%s)\n", key.to_s, BASEURI[key]
+    end
     puts
     exit
   end
