@@ -83,10 +83,32 @@ docker run.
 
 ### Debugging
 
-To drop into a shell within the docker container after generating the custom , pass the "bash" argument to the
-command line:
+To drop into a shell within the docker container after generating the custom
+RAML files, pass the "bash" argument to the command line:
 
     $ docker run -it --rm -v "$PWD":/raml -p 9000:9000 venkytv/covisint-api-console bash
+
+If there is a problem generating the custom RAMLs itself, the previous command
+might fail.  In that case, do the following:
+
+    $ docker run -it --rm -v "$PWD":/raml -p 9000:9000 --entrypoint=bash venkytv/covisint-api-console --
+
+This will drop you into a shell inside the container.  Now, you can run the
+parser script manually by hand to debug the issue:
+
+    # /api-console/ramlparser.rb /raml /tmp /raml/release-manifest.yml
+
+The parser and all the supporting scripts are inside the `/api-console`
+directory.  The container does not include an editor; so, if you want to edit
+any of the files, you need to install an editor:
+
+    # apt-get install vim
+
+**REMEMBER**: Any changes you make within the container are lost the moment you
+exit the shell.  The container is re-created afresh every time you do a "docker
+run" and removed as soon as the command exits.  If you make any changes to the
+scripts under `/api-console`, make sure the changes are also made in the
+corresponding scripts in the `api-raml` git repo under the `docker/` directory.
 
 ## Simplified usage
 
