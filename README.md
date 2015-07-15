@@ -91,7 +91,8 @@ RAML files, pass the "bash" argument to the command line:
 If there is a problem generating the custom RAMLs itself, the previous command
 might fail.  In that case, do the following:
 
-    $ docker run -it --rm -v "$PWD":/raml -p 9000:9000 --entrypoint=bash venkytv/covisint-api-console --
+    $ docker run -it --rm -v "$PWD":/raml -p 9000:9000 \
+      --entrypoint=bash venkytv/covisint-api-console --
 
 This will drop you into a shell inside the container.  Now, you can run the
 parser script manually by hand to debug the issue:
