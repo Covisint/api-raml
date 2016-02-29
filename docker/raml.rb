@@ -67,10 +67,26 @@ module DescriptionParser
 
 end
 
+#Adding Module to return values in 'is' node within a resource. Change is to allow Unsecured flows as well.[Naveen:29-02-2016]
+module FlowTypeIdentifier
+    
+  def fetchFlowType
+    isValue = @obj.has_key?('is') ? @obj['is']:[]
+    localFlowtype = ''
+    for i in 0..isValue.length
+      if (isValue[i] == 'unsecured' or isValue[i] == 'secured')
+        localFlowtype = isValue[i]
+      end
+    end
+    localFlowtype
+  end
+end
+
 class Resource
   include DescriptionParser
+  include FlowTypeIdentifier
 
-  def initialize(dict, uri='', inheritedSince='0.0', inheritedVisibility='public')
+  def initialize(dict, uri='', inheritedSince='0.0', inheritedVisibility='public', inheritedFlowType='secured')
     @uri = uri
     @obj = dict
     localSince = value_of('since')
@@ -78,6 +94,7 @@ class Resource
            ? localSince \
            : inheritedSince
     localVisibility = value_of('visibility')
+    
     if (inheritedVisibility == 'private')
       @visibility = inheritedVisibility
     elsif (localVisibility.length > 0)
@@ -85,10 +102,17 @@ class Resource
     else
       @visibility = 'public'
     end
+
+    localFlowtype = fetchFlowType
+    if (localFlowtype.length > 0)
+      @flowtype = localFlowtype
+    else
+      @flowtype = inheritedFlowType
+    end    
   end
 
   def resources
-    @obj.keys.grep(/^\//).map {|e| Resource.new(@obj[e], File.join(@uri, e), @since, @visibility)}
+    @obj.keys.grep(/^\//).map {|e| Resource.new(@obj[e], File.join(@uri, e), @since, @visibility, @flowtype)}
   end
 
   def all_resources
@@ -101,7 +125,7 @@ class Resource
   end
 
   def actions
-    @obj.keys.find_all{|k| k =~ /^(get|put|post|delete)$/}.map{|e| Action.new(@obj[e], e, @since, @visibility)}
+    @obj.keys.find_all{|k| k =~ /^(get|put|post|delete)$/}.map{|e| Action.new(@obj[e], e, @since, @visibility, @flowtype)}
   end
 
   def drop_resource(res)
@@ -112,14 +136,15 @@ class Resource
     @obj.delete_if {|key, value| key == action.type}
   end
 
-  attr_reader :since, :uri, :visibility
+  attr_reader :since, :uri, :visibility, :flowtype
 
 end
 
 class Action
   include DescriptionParser
+  include FlowTypeIdentifier
 
-  def initialize(dict, type, inheritedSince='0.0', inheritedVisibility='public')
+  def initialize(dict, type, inheritedSince='0.0', inheritedVisibility='public', inheritedFlowType='secured')
     @type = type
     @obj = dict
     localSince = value_of('since')
@@ -133,6 +158,13 @@ class Action
       @visibility = localVisibility
     else
       @visibility = 'public'
+    end
+	
+	localFlowtype = fetchFlowType
+    if (localFlowtype.length > 0)
+      @flowtype = localFlowtype
+    else
+      @flowtype = inheritedFlowType
     end
   end
 
@@ -154,7 +186,7 @@ class Action
     @obj['responses'].delete_if {|key, value| key == response.code}
   end
 
-  attr_reader :since, :type, :visibility
+  attr_reader :since, :type, :visibility, :flowtype
 
 end
 
