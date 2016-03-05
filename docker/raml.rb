@@ -72,12 +72,14 @@ module FlowTypeIdentifier
     
   def fetchFlowType
     isValue = @obj.has_key?('is') ? @obj['is']:[]
-    localFlowtype = ''
-    for i in 0..isValue.length
-      if (isValue[i] == 'unsecured' or isValue[i] == 'secured')
-        localFlowtype = isValue[i]
-      end
-    end
+	localFlowtype = ""
+	unless isValue.nil?	
+		for i in 0..isValue.length
+		  if (isValue[i] == 'unsecured' or isValue[i] == 'secured')
+			localFlowtype = isValue[i]
+		  end
+		end
+	end	
     localFlowtype
   end
 end
