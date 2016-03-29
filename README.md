@@ -28,6 +28,7 @@ Now, browse the generated documentation on your local machine.
 
 * On Linux, browse to [http://localhost:9000/raml](http://localhost:9000/raml)
 * On Mac and Windows, use http://192.168.59.103:9000/raml
+* (On Mac it may be: http://192.168.99.100:9000/raml -- you can use 'docker-machine ls' to find IP)
 
 _In case you are are unable to access the api-console on Mac or Windows, make
 sure that the VM IP has not changed using the `boot2docker` command._
