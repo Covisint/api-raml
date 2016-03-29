@@ -30,18 +30,18 @@ Now, browse the generated documentation on your local machine.
 * On Mac and Windows, use http://192.168.99.100:9000/raml
 
 _In case you are are unable to access the api-console on Mac or Windows, make
-sure that the VM IP has not changed using the `boot2docker` command._
+sure that the VM IP has not changed using the `boot2docker` command_
 ```
     $ boot2docker ip
     192.168.59.103
 ```
 
-_boot2Docker has been deprecated.  You are probably using docker-machine now so use:
-'''
+_boot2Docker has been deprecated.  You are probably using docker-machine now so use:_
+```
    $ docker-machine ls
    NAME      ACTIVE   DRIVER       STATE     URL                         SWARM   DOCKER    ERRORS
    default   -        virtualbox   Running   tcp://192.168.99.100:2376           v1.10.3
-'''
+```
 and grab the IP from the URL column.
 
 ### Generating version-specific RAML files
